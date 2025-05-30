@@ -1,0 +1,49 @@
+{% load i18n %}
+{% if results %}
+<link href='/static/sleek-bootstrap/css/datatables.bootstrap4.min.css' rel='stylesheet'>
+<link href="/static/sleek-bootstrap/css/sleek.min.css">
+<div class="card card-default">
+    <div class="card-header">
+        <h3 class="card-title">{{ cl.opts.verbose_name_plural|capfirst }}</h3>
+    </div>
+    <div class="card-body">
+        <table id="basic-data-table" class="table nowrap" style="width:100%" data-order='[[ 4, "desc" ]]'>
+            <thead>
+             <tr>
+            {% for header in result_headers %}
+              <th>{{ header.text|capfirst }}</th>
+            {% endfor %}
+             </tr>
+            </thead>
+            
+           </table>
+    </div>
+</div>
+
+<script src="/static/sleek-bootstrap/js/jquery.datatables.min.js"></script>
+<script src="/static/sleek-bootstrap/js/datatables.bootstrap4.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#basic-data-table').DataTable({
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'get_data' %}",  // 替换为你的URL
+                "type": "GET",
+            },
+            // 设置默认pagesize
+            "pageLength": 10,
+            "lengthMenu": [             // 用户可以选择的分页选项
+                [1, 10, 25, 50, -1],
+                [1, 10, 25, 50, "All"]
+            ],
+            "order": [[ 4, "desc" ]],
+            // 设置checkbox,点击勾选所有    
+            "columnDefs": [
+                { "targets": [0], "orderable": false, "searchable": false, "width": "5%" }
+            ]
+        });
+    });
+</script>
+
+{% endif %}

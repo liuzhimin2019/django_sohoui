@@ -1,0 +1,143 @@
+{% extends "admin/base.html" %}
+
+{% load i18n static %}
+
+{% block extrastyle %}{{ block.super }}<link rel="stylesheet" href="{% static "admin/css/login.css" %}">
+{{ form.media }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} login{% endblock %}
+
+{% block usertools %}{% endblock %}
+
+{% block nav-global %}{% endblock %}
+
+{% block nav-sidebar %}{% endblock %}
+
+{% block content_title %}{% endblock %}
+
+{% block nav-breadcrumbs %}{% endblock %}
+{% block branding %}<h1>{{ site_header }}</h1>{% endblock %}
+{% block content %}
+{% if form.errors and not form.non_field_errors %}
+<p class="errornote">
+{% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+</p>
+{% endif %}
+
+{% if form.non_field_errors %}
+{% for error in form.non_field_errors %}
+<p class="errornote">
+    {{ error }}
+</p>
+{% endfor %}
+{% endif %}
+
+<div id="content-main">
+
+{% if user.is_authenticated %}
+<p class="errornote">
+{% blocktranslate trimmed %}
+    You are authenticated as {{ username }}, but are not authorized to
+    access this page. Would you like to login to a different account?
+{% endblocktranslate %}
+</p>
+{% endif %}
+
+<form action="{{ app_path }}" method="post" id="login-form">{% csrf_token %}
+  <div class="form-row">
+    {{ form.username.errors }}
+    {{ form.username.label_tag }}
+    <input type="text" name="username" autofocus="" autocapitalize="none" autocomplete="username" maxlength="150" required="" id="id_username" placeholder="{% translate 'username' %}">
+  </div>
+  <div class="form-row">
+    {{ form.password.errors }}
+    {{ form.password.label_tag }}
+    <input type="password" name="password" autocomplete="current-password" required="" id="id_password" placeholder="{% translate 'Password' %}">
+    <input type="hidden" name="next" value="{{ next }}">
+  </div>
+  {% url 'admin_password_reset' as password_reset_url %}
+  {% if password_reset_url %}
+  <div class="password-reset-link">
+    <a href="{{ password_reset_url }}">{% translate 'Forgotten your password or username?' %}</a>
+  </div>
+  {% endif %}
+  <div class="submit-row">
+    <input type="submit" value="{% translate 'Log in' %}">
+  </div>
+</form>
+<style>
+    :root {
+        --header—zack-bg: #999999;
+    }
+    html,body {
+        background-image: url('{{ LOGIN_BG_IMAGE }}');
+        background-size: cover;
+        background-position: center;
+        width: 100%;
+        height: 100%;
+    }
+    .login{
+        background-image: url('{{ LOGIN_BG_IMAGE }}');
+        background-size: cover;
+        background-position: center;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+    }
+    .login #container{
+      margin: 0 auto;
+      background-color: rgba(255, 255, 255, 0.081);
+      border-radius:20px;
+    }
+    .login input[type="text"],.login input[type="password"]{
+      border-radius: 10px;
+      height: 40px;
+      background-color: rgba(67, 64, 64, 0.484);
+      font-weight: bolder;
+      color: white;
+    }
+
+   
+    #header{
+      background-color: rgba(255, 255, 255, 0.081);
+    }
+    .theme-toggle svg.theme-icon-when-auto, .theme-toggle svg.theme-icon-when-dark, .theme-toggle svg.theme-icon-when-light{
+      background: var(--header—zack-bg);
+    }
+    .theme-toggle svg.theme-icon-when-auto, .theme-toggle svg.theme-icon-when-dark, .theme-toggle svg.theme-icon-when-light{
+      color: var(--header—zack-bg);
+    }
+    .submit-row {
+        padding: 0;  /* 移除默认内边距 */
+        width: 100%;
+    }
+    
+    .submit-row input[type="submit"] {
+        width: 100%;
+        height: 40px;  /* 与输入框高度一致 */
+        border-radius: 10px;  /* 与输入框圆角一致 */
+        margin: 0;  /* 移除默认外边距 */
+        background: rgb(152, 135, 126);  /* 使用之前定义的变量 */
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 18px;
+    }
+
+    .submit-row input[type="submit"]:hover {
+        background: rgb(161, 108, 79);
+        opacity: 0.9;
+    }
+    #content-main{
+      background-color: None !important;
+    }
+    .errornote{
+      background-color: rgba(255, 255, 255, 0.081);
+      color: rgb(252, 5, 5);
+    }
+</style>
+</div>
+{% endblock %}

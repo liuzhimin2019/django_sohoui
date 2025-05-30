@@ -1,0 +1,56 @@
+<div id="app_{{ widget.name }}">
+    <template>
+        {% if widget.value %}
+        <input type="hidden" name="adminmenus" value="{{ widget.value }}">
+        {% else %}
+        <input type="hidden" name="adminmenus" value="">
+        {% endif %}
+        <div style="display: flex; align-items: center;">
+            <el-select v-model="value" placeholder="请选择" filterable @change="changeValue" :disabled="disabled">
+                <el-option
+                    v-for="item in options"
+                    :key="item.value"
+                    :label="item.label"
+                    :value="item.value">
+                </el-option>
+            </el-select>
+        </div>
+    </template>
+</div>
+<style>
+    .el-select .el-input{
+        width: 220px;
+    }
+    .el-select__caret{
+        line-height: 34px;
+    }
+</style>
+<script>
+    const foreigh_choices = {{ widget.foreigh_choices|safe }};
+    var value = '{{ widget.value }}';
+    if (value == '' || value == 'None') {
+        value = '';
+    }else{
+        value = parseInt(value);
+    }
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data: {
+            value: value,
+            options: foreigh_choices,
+            disabled: disabled
+        },
+        methods: {
+            changeValue(value) {
+                console.log(value)
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value;
+                // document.getElementById('{{ widget.name }}').value = value;
+            }
+        }
+    })
+</script>

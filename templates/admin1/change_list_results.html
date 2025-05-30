@@ -1,0 +1,25 @@
+<template>
+    <el-table
+      :data="results"
+      border
+      stripe
+      style="width: 100%">
+      <el-table-column
+        v-for="header in result_headers"
+        :key="header.prop" 
+        :prop="header.prop" 
+        :label="header.text">
+        <template v-slot="scope">
+            <el-switch v-if="scope.row[header.prop] == 'True'" :value="true"></el-switch>
+            <el-switch v-else-if="scope.row[header.prop] == 'False'" :value="false"></el-switch>
+            <span v-else>{% verbatim %}{{ scope.row[header.prop] }}{% endverbatim %}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="100">
+        <template v-slot="scope">
+          <el-button type="primary" @click="handleEdit(scope.row)">编辑</el-button>
+          <!-- <el-button type="danger" @click="handleDelete(scope.row)">删除</el-button> -->
+        </template>
+      </el-table-column>
+    </el-table>
+</template>

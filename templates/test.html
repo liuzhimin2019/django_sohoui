@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/static/django_sohoui/js/vue.js"></script>
+    <script src="/static/django_sohoui/js/index.js"></script>
+    <script src="/static/django_sohoui/js/jquery.min.js"></script>
+    <script src="/static/django_sohoui/js/axios.min.js"></script>
+    <link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+    <link rel="stylesheet" href="/static/admin/css/base.css">
+    <!-- 引入 Font Awesome -->
+    <link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+    <!-- 引入 Bootstrap CSS -->
+    <link href="/static/django_sohoui/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <title>Document</title>
+</head>
+<body>
+<div id="app">
+    <div class="addrow" id="inputContainer">
+        <el-input-number v-model="num" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
+    </div>
+</div>
+<script>
+    new Vue({
+        el: '#app',
+        data: {
+            num: 0,
+        },
+        methods: {
+            handleChange(value) {
+                console.log('当前值:', value);
+            },
+        }
+    });
+</script>
+<td class="field-price">
+              
+                  
+<div id="app_exampleitem_set-__prefix__-price" class="field-item">
+    <el-input-number v-model="num" @change="handleChange" :min="1" :max="10" label="描述文字"></el-input-number>
+</div>
+<script>
+        if ('' == 'True') {
+        disabled = true
+        }else{
+        disabled = false
+        }
+
+        new Vue({
+            el: '#app_exampleitem_set-__prefix__-price',
+            data: {
+            num: parseFloat('0.0') || 1,
+            disabled: disabled
+            },
+            methods: {
+            updateValue() {
+            this.$el.querySelector('input[name="exampleitem_set-__prefix__-price"]').value = this.num;
+            }
+            }
+        })
+</script>
+
+</td>
+
+<button type="primary" id="addButton">新增</button>
+<script>
+    document.getElementById('addButton').addEventListener('click', function() {
+        // 以id="template"为模板，复制一个div，添加到body中,id为app2
+        var newDiv = document.getElementById('app').cloneNode(true);
+        newDiv.id = 'app1';
+        // 在id="app" 下方添加newdiv
+        
+        document.getElementById('app').insertAdjacentElement('afterend', newDiv);
+        new Vue({
+            el: '#app1',
+            data: {
+                num: 1,
+            },
+        });
+        // 等待 DOM 更新后再初始化 Vue 实例
+        // setTimeout(() => {
+        //     new Vue({
+        //         el: '#app1',
+        //         data: {
+        //             num: 1,
+        //         },
+        //     });
+        // }, 3000);
+    });
+</script>
+
+</body>
+
+</html>

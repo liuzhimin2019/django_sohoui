@@ -1,0 +1,29 @@
+<div id="app_{{ widget.name }}" class="field-item">
+    <el-input v-model="value" :type="type" :name="name" style="width: 400px;" rows="8" :disabled="disabled" />
+</div>
+<script>
+    var value = '{{ widget.value }}'
+    var filed_value = ''
+    if (value == '' || value == 'None') {
+        filed_value = ''
+    }else{
+        filed_value = value
+    }
+
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data: {
+            type: '{{ widget.type }}',
+            name: '{{ widget.name }}',
+            value: filed_value,
+            field_name: '{{ widget.field_name }}',
+            disabled: disabled
+        },
+    })
+</script>

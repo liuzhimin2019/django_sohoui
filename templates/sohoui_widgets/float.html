@@ -1,0 +1,28 @@
+<div id="app_{{ widget.name }}" class="field-item">
+    <el-input-number v-model="num" :name="name" :precision="2" :step="0.1" :min="0"  :disabled="disabled"></el-input-number>
+</div>
+<script>
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+
+    // Vue.component('my-component', {
+    //     // 组件定义
+    // });
+
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data: {
+            num: parseFloat('{{ widget.value }}') || 0,
+            disabled: disabled,
+            name: '{{ widget.name }}'
+        },
+        methods: {
+            updateValue() {
+                // this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value;
+            }
+        }
+    })
+</script>

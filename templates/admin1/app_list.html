@@ -1,0 +1,313 @@
+<style>
+    :root{
+        --main-bg-color: #28b6be;
+        --main-top-color: #588cb1;
+        --main-logo-color: #588cb1;
+        --main-menu-color: #304156;
+        --main-menu-content-color: rgb(246, 246, 246);
+        --main-top-content-color: #f5f7f9;
+        --main-logo-content-color: rgb(244, 237, 237);
+    }
+    header{
+        background-color: var(--main-logo-color);
+    }
+    .sidebar-sticky{
+        color: var(--main-menu-content-color);
+    }
+    .sidebar-sticky span{
+        color: var(--main-menu-content-color);
+    }
+    
+    .sidebar {
+        height: 100vh;
+        background-color: var(--main-menu-color);
+        width: 240px;
+        color: var(--main-menu-content-color);
+        transition: width 0.3s ease, box-shadow 0.3s ease;
+        box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+    }
+    .sidebar a{
+        color: var(--main-menu-content-color);
+    }
+    header h1{
+        color: var(--main-logo-content-color) !important;
+        font-size: 25px !important;
+        line-height: 50px !important;
+        text-align: left;
+    }
+    header h1 span{
+        font-size: 20px;
+    }
+    /* .nav_active{
+        background-color: var(--main-bg-color) !important;
+    } */
+    .nav-link{
+        padding: 1rem 1rem;
+    }
+
+    .sidebar.collapsed {
+        width: 50px; /* 收缩后的宽度 */
+        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.7);
+    }
+   
+    .fas{
+        font-size: 14px;
+    }
+    .sidebar.collapsed .nav{
+        display: block;
+    }
+    /* main{
+        width: 90%; 
+    } */
+
+    .sidebar.collapsed + main {
+        width: calc(100% - 50px); /* 收缩时自适应宽度 */
+    }
+    main .header{
+        width: 100%;
+        height: 52px;
+        background-color: var(--main-top-color);
+        display: flex; /* 使用Flexbox布局 */
+        align-items: center; /* 垂直居中对齐 */
+        justify-content: space-between; /* 水平分散对齐 */
+    }
+    main .header_left{
+        float: left;
+        margin-left: 5px;
+        line-height: 52px;
+    }
+    
+    main .header_right{
+        float: right;
+        margin-right: 5px;
+    }
+    ul li{
+        list-style: none;
+    }
+    li a{
+        text-decoration: none;
+        font-size: 14px;
+    }
+    .header{
+        background-color: var(--main-top-color) !important;
+    }
+    .header .fas{
+        color: var(--main-top-content-color) !important;
+    }
+    .header .btn-primary{
+        color: var(--main-top-content-color) !important;
+        background-color: var(--main-top-color) !important;
+        border-color: var(--main-top-color) !important;
+    }
+    .nav-item a:hover {
+        background-color: rgba(40, 182, 190, 0.5); /* 鼠标悬停时的背景色 */
+    }
+
+    .nav-item .sub-menu li a:hover {
+        background-color: rgba(40, 182, 190, 0.3); /* 二级菜单项鼠标悬停时的背景色 */
+    }
+
+    .sub-menu {
+        padding-left: 15px; /* 为二级菜单添加左侧内边距 */
+        display: none; /* 默认隐藏 */
+        position: relative; /* 使其相对定位 */
+        z-index: 1; /* 确保在其他元素之上 */
+    }
+
+    .nav-item.active .sub-menu {
+        display: block; /* 激活状态下显示二级菜单 */
+    }
+    .fa-caret-down{
+        float: right;
+    }
+    .nav_text{
+        color: var(--main-logo-content-color);
+    }
+    .el-menu{
+        border-right: solid 1px #e6e6e6;
+        list-style: none;
+        position: relative;
+        margin: 0;
+        padding-left: 0;
+        background-color: #FFF;
+    }
+    .el-menu-item {
+        font-size: 14px;
+        color: #303133;
+        padding: 0 20px;
+        cursor: pointer;
+        -webkit-transition: border-color .3s, background-color .3s, color .3s;
+        transition: border-color .3s, background-color .3s, color .3s;
+        box-sizing: border-box; 
+    }
+    .el-menu-item, .el-submenu__title{
+        height: 56px;
+        line-height: 56px;
+        position: relative;
+        -webkit-box-sizing: border-box;
+        white-space: nowrap;
+        list-style: none;
+    }
+    .el-menu--popup{
+        z-index: 100;
+        border: none;
+        padding: 5px 0;
+        border-radius: 2px;
+        -webkit-box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+        box-shadow: 0 2px 12px 0 rgba(0, 0, 0, .1);
+    }
+    @media (max-width: 768px) {
+        .sidebar {
+            width: 60px; /* 收缩后的宽度 */
+        }
+        .nav_text{
+            display: none;
+        }
+        .fa-caret-down{ 
+            display: none;
+        }
+    }
+</style>
+<nav class="sidebar">
+    <header class="">
+        <a href="{% url 'admin:index' %}">
+            <h1>
+                <img src="{{ SOHO_SITE_IMAGE }}" alt="logo" style="max-height: 40px; padding-right: 10px;padding-left: 5px;">
+                <span class="nav_text">{{ site_header }}</span>
+            </h1>
+        </a>
+    </header>
+    <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+            {% for app in app_list %}
+            <li class="nav-item" data-dialog="{{ forloop.counter }}">
+                <a class="nav-link {% if forloop.first %} nav_active{% endif %}" href="#" onclick="toggleSubMenu(event)">
+                    {% if app.icon %}
+                    <i class="{{ app.icon }}"></i> 
+                    {% else %}
+                    <i class="fas fa-home"></i> 
+                    {% endif %}
+                    <span class="nav_text">{{ app.name }}</span>
+                    <i class="fas fa-solid fa-caret-down"></i>
+                </a>
+                <ul class="sub-menu">
+                    {% for model in app.models %}
+                    <li class="nav-item">
+                        <a class="nav-link" onclick="openTab(event, '{{ model.name }}', '{{ model.admin_url }}')">
+                        {% if model.icon %}
+                        <i class="{{ model.icon }}"></i> 
+                        {% else %}
+                        <i class="fas fa-home"></i> 
+                        {% endif %}
+                        {{ model.name }}
+                    </a>
+                </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% for app in app_list %}
+    {% if app.models %}
+    <div class="el-menu--vertical" id="dialog_{{ forloop.counter }}" style="position: absolute;top: 80px;left: 64px;z-index: 2026;display: none;" x-placement="right-start" onmouseleave="hideDialog({{ forloop.counter }})">
+        <ul role="menu" class="el-menu el-menu--popup el-menu--popup-right-start">
+            <div>
+                {% for model in app.models %}
+                <li role="menuitem" tabindex="-1" class="el-menu-item" style="padding-left: 20px;"><i class="fas {{ model.icon }}"></i> <span>{{ model.name }}</span></li>
+                {% endfor %}
+            </div>
+        </ul>
+    </div>
+    {% endif %}
+    {% endfor %}
+</nav>
+
+<script>
+    function showDialog(dialog){
+        // 隐藏所有dialog
+        console.log(dialog)
+        $('.el-menu--vertical').each(function(){
+            $(this).hide();
+        })
+        $('#dialog_'+dialog).show();
+    }
+    function hideDialog(dialog) {
+        $('#dialog_' + dialog).hide(); // 隐藏指定的对话框
+    }
+
+    function toggleSubMenu(event) {
+        // 阻止链接的默认行为
+        event.preventDefault();
+        if ($('.sidebar').hasClass('collapsed')) {
+            showDialog(event.target.closest('.nav-item').dataset.dialog); //传递当前父节点中的的data-dialog
+            return; // 如果是收缩状态，直接返回，不进行任何操作
+        }
+        // 找到当前点击的菜单项的下一个子菜单
+        const subMenu = event.target.closest('.nav-item').querySelector('.sub-menu');
+        // 切换子菜单的显示状态
+        if (subMenu.style.display === "none"  || subMenu.style.display === "") {
+            // 移除所有class 中的 nav_active
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('nav_active');
+            });
+            // 添加当前点击的菜单项的nav_active
+            subMenu.style.display = "block";
+        } else {
+            subMenu.style.display = "none";
+        }
+    }
+</script>
+
+<!-- 引入 Bootstrap JS 和依赖的 jQuery -->
+<script src="/static/ui_template/js/jquery-3.5.1.slim.min.js"></script>
+<script src="/static/ui_template/js/popper.min.js"></script>
+<script src="/static/ui_template/js/bootstrap.min.js"></script>
+
+<script>
+    $(document).ready(function(){
+        $('.nav li a').each(function(){
+            $(this).click(function(){
+                $(this).siblings().removeClass('nav_active');
+                $(this).addClass('nav_active');
+            })
+        })
+    });
+</script>
+<script>
+    $(document).ready(function(){
+        function checkWidth() {
+            if ($(window).width() < 768) {
+                $('.sidebar').addClass('collapsed'); // 添加 collapsed 类
+            } else {
+                $('.sidebar').removeClass('collapsed'); // 移除 collapsed 类
+            }
+        }
+
+        // 初始检查
+        checkWidth();
+
+        // 监听窗口大小变化
+        $(window).resize(function() {
+            checkWidth();
+        });
+
+        
+        // 处理侧边栏收缩的逻辑
+        $('#toggleSidebar').click(function(){
+            $('.sidebar').toggleClass('collapsed'); // 切换 collapsed 类
+            if ($('.sidebar').hasClass('collapsed')) {
+                $('.nav_text').hide(); // 收缩时隐藏文本
+                $('.fa-caret-down').hide(); // 收缩时隐藏文本
+                $('.sub-menu').hide();
+            } else {
+                $('.nav').show(); // 切换导航的显示
+                $('.fa-caret-down').show(); // 切换导航的显示
+                $('.nav_text').each(function(){
+                    $(this).show();
+                })
+            }
+        });
+        
+    });
+</script>

@@ -1,0 +1,53 @@
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+<div id="object-tools">
+    <template>
+        <el-button @click="dialogVisible = true" class="historylink"><i class="fas fa-history"></i>{% translate "History" %}</el-button>
+        <el-dialog :visible.sync="dialogVisible" title='{% translate "History" %}' width="50%">
+            <el-card>
+                <el-table :data="tableData" style="width: 100%; height: 500px; overflow-y: auto;">
+                    <el-table-column prop="date" label="{% translate 'Date/time' %}" width="300px" ></el-table-column>
+                    <el-table-column prop="name" label="{% translate 'User' %}" width="100px" ></el-table-column>
+                    <el-table-column prop="action" label="{% translate 'Action' %}"></el-table-column>
+                </el-table>
+            </el-card>
+        </el-dialog>
+    </template>
+</div>
+<script>
+    const action_list = {{ action_list|safe }}
+    history = new Vue({
+        el: '#object-tools',
+        data: {
+            dialogVisible: false,
+            tableData: []
+        },
+        mounted(){
+            this.get_history();
+        },
+        methods: {
+            get_history(){
+                action_list.forEach(item => {
+                    this.tableData.push({
+                        date: item.action_time,
+                        name: item.user,
+                        action: item.action
+                    });
+                });
+            }
+        }
+    })
+</script>
+<style>
+    #object-tools{
+        position: absolute;
+        margin-top: 0px;
+        top: 0px;
+        right: 30px;
+    }
+    .el-table__row{
+        font-size: 15px;
+    }
+</style>
+{% endblock %}

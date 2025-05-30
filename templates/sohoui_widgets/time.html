@@ -1,0 +1,42 @@
+<div id="app_{{ widget.name }}" class="field-item">
+    {% if widget.value %}
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    {% else %}
+    <input type="hidden" name="{{ widget.name }}" value="">
+    {% endif %}
+    <el-time-picker
+        v-model="value"
+        placeholder="任意时间点"
+        value-format="HH:mm:ss"
+        @change="updateValue" :disabled="disabled">
+    </el-time-picker>
+</div>
+<script>
+    var value = '{{ widget.value }}'
+    var filed_value = ''
+    if (value == '' || value == 'None') {
+        filed_value = ''
+    }else{
+        filed_value = value
+    }
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data: {
+            type: '{{ widget.type }}',
+            name: '{{ widget.name }}',
+            value: filed_value,
+            field_name: '{{ widget.field_name }}',
+            disabled: disabled
+        },
+        methods: {
+            updateValue() {
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value;
+            }
+        }
+    })
+</script>

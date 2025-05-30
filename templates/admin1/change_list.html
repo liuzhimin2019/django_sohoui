@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+{% load i18n static  %}
+{% load admin_lis t%}
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="/static/django_sohoui/css/index_chalk.css">
+    <!-- import Vue before Element -->
+    <script src="/static/django_sohoui/js/vue.js"></script>
+    <script src="/static/django_sohoui/js/axios.min.js"></script>
+    <!-- import JavaScript -->
+    <script src="/static/django_sohoui/js/index.js"></script>
+    <script src="/static/django_sohoui/js/jquery.min.js"></script>
+    <style>
+        body{
+            background-color: #f1f1f1 !important;
+        }
+        #toolbar{
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="toolbar">
+            {% block messages %}
+            <div id="message_info"></div>
+            {% endblock messages %}
+            <el-form id="changelist-search" method="get" onsubmit="preSubmit(this)">
+                {% if cl.search_fields %}
+                <el-row :gutter="20">
+                    <el-col :xl="2" :lg="4" :md="6" :xs="12" class="custom-column">
+                        <div class="grid-content bg-purple-dark">
+                            <el-form-item >
+                                <el-input :placeholder="search_placeholder" name="q" v-model="search_value.q" clearable></el-input>
+                            </el-form-item>
+                        </div>
+                    </el-col>
+                    <el-col :xl="2" :lg="4" :md="6" :xs="12" v-for="filter in filter_list" :key="filter.field" class="custom-column">
+                        <div class="grid-content bg-purple-dark">
+                            <el-form-item>
+                                <el-select v-model="search_value[filter.field]" clearable filterable :placeholder="filter.field_name" @change="get_query(filter.field, search_value[filter.field])">
+                                    <el-option v-for="choice in filter.choices" :key="choice.value" :label="choice.label" :value="choice.value"></el-option>
+                                </el-select>
+                                <el-input type="hidden" :name="filter.field" v-model="search_value[filter.field]"/>
+                            </el-form-item>
+                        </div>
+                    </el-col>
+                    <el-col :xl="2" :lg="4" :md="6" :xs="12" class="custom-column">
+                        <div class="grid-content bg-purple-dark">
+                            <el-form-item>
+                                <el-button type="primary" @click="search">搜索</el-button>
+                                <el-button type="success" @click="reset">重置</el-button>
+                            </el-form-item>
+                        </div>
+                    </el-col>
+                </el-row>
+                {% endif %}
+                <el-row style="margin-bottom: 20px;">
+                    <el-button type="primary" @click="add">新增</el-button>
+                </el-row>
+                {% block result_list %}
+                {% result_list cl %}
+                {% endblock %}
+            </el-form>
+       
+        </div>
+        
+    </div>
+</body>
+
+<script type="text/javascript">
+    function preSubmit() {
+        $('#changelist-search').find("input[name!='']").each(function () {
+            if ($(this).val() == '') {
+                $(this).removeAttr('name');
+            }
+        });
+    }
+</script>
+<script>
+    
+    const result_headers = {{ result_headers|safe }}
+    const result_list = {{ result_list|safe }}
+    const filter_list = {{ filter_list|safe }}
+    var messages_info = {{ messages_info|safe }}
+    console.log('{{ messages }}')
+    var search_placeholder = '{{ search_placeholder }}'
+    pcd = new Vue({
+        el: '#app',
+        data: {
+            result_headers: result_headers,
+            results: result_list,
+            filter_list: filter_list,
+            search_placeholder: '搜索'+search_placeholder,
+            search_value: {
+                q: '',
+                {% for filter in filter_list %}
+                {{ filter.field }}: '',
+                {% endfor %}
+            }
+        },
+        mounted() {
+            // 使用window.location.search获取查询字符串，转成数组
+            const params = new URLSearchParams(window.location.search);
+            this.search_value['q'] = params.get('q') || ''
+            {% for filter in filter_list %}
+            if(params.get('{{ filter.field }}') == 0){
+                this.search_value['{{ filter.field }}'] = 0
+            }else{
+                this.search_value['{{ filter.field }}'] = parseInt(params.get('{{ filter.field }}')) || ''; // 获取其他过滤器参数
+            }
+            {% endfor %}
+            
+            // if(messages_info){
+            //     this.$notify({
+            //         title: '消息',
+            //         message: messages_info.message,
+            //         type: messages_info.tag // 或 'error', 'info', 'warning' 根据需要选择
+            //     });
+            // }
+            // {% for message in messages %}
+            // this.$notify({
+            //     title: '消息',
+            //     message: message.message,
+            //     type: message.tag // 或 'error', 'info', 'warning' 根据需要选择
+            // });
+            // {% endfor %}
+        },
+        methods: {
+            get_query(key, val){
+                this.search_value[key] = val;
+                console.log(this.search_value)
+            },
+            search() {
+                preSubmit();
+                document.getElementById('changelist-search').submit();
+            },
+            add(){
+                console.log('{{ add_url }}')
+                window.location.href = '{{ add_url }}'
+            },
+            handleEdit(row) {
+                window.location.href = row.change_url
+            },
+            reset(){
+                //获取当前url，去掉？后面的参数
+                const url = window.location.href.split('?')[0];
+                window.location.href = url;
+            }
+        }
+    })
+</script>
+{% if messages %}
+    <script>
+
+        new Vue({
+            el: '#message_info',
+            mounted() {
+                console.log(messages)
+                // 遍历所有消息并显示通知
+                const messages = [
+                    {% for message in messages %}
+                    {
+                        title: '消息',  // 显示消息标题
+                        dangerouslyUseHTMLString: true,
+                        message: '{{ message.message|safe }}',  // 显示消息内容
+                        type: '{{ message.tags }}',  // 消息类型
+                        duration: 3000,
+                    },
+                    {% endfor %}
+                ];
+                console.log(messages)
+                messages.forEach(msg => {
+                    this.$notify(msg);
+                });
+            }
+        });
+    </script>
+{% endif %}
+<style>
+    #result_list{
+        width: 100%;
+        font-size: 18px;
+    }
+    #result_list th{
+        text-align: center;
+    }
+    #result_list td{
+        text-align: center;
+    }
+    #result_list thead {
+        background-color: white;
+    }
+</style>
+</html>

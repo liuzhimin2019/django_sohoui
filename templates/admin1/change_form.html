@@ -1,0 +1,175 @@
+
+<!DOCTYPE html>
+<html>
+{% load i18n static  %}
+{% load admin_list%}
+{% load i18n admin_urls static admin_modify%}
+<head>
+    <meta charset="UTF-8">
+    <!-- import CSS -->
+    <link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+    <!-- import Vue before Element -->
+    <script src="/static/django_sohoui/js/vue.js"></script>
+    <script src="/static/django_sohoui/js/axios.min.js"></script>
+    <!-- import JavaScript -->
+    <script src="/static/django_sohoui/js/index.js"></script>
+    <script src="/static/django_sohoui/js/jquery.min.js"></script>
+    <style>
+        body{
+            background-color: #f1f1f1 !important;
+        }
+        #toolbar{
+            background-color: white;
+            border-radius: 5px;
+            padding: 20px 20px;
+        }
+        .el-input{
+            max-width: 20rem;
+        }
+        .errornote{
+            font-size: 0.875rem;
+            font-weight: 700;
+            display: block;
+            padding: 10px 12px;
+            margin: 0 0 10px 0;
+            color: var(--error-fg);
+            border: 1px solid var(--error-fg);
+            border-radius: 4px;
+            background-color: var(--body-bg);
+            background-position: 5px 12px;
+            overflow-wrap: break-word;
+        }
+        .el-alert{
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .errorlist{
+            margin-left: 130px;
+            margin: 0 0 4px 130px;
+        }
+        .errorlist li{
+            text-decoration: none;
+            list-style: none;
+            text-align: left;
+            padding: 0; /* 去掉内边距 */
+            margin: 0; 
+            color: red;
+        }
+        .errors input, .errors select, .errors textarea, td ul.errorlist + input, td ul.errorlist + select, td ul.errorlist + textarea{
+            border: 1px solid red;
+        }
+        .page-header{
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div>
+        <div id="toolbar">
+            <div class="page-header">
+                <el-page-header @back="goBack" content="详情页面">
+                </el-page-header>
+                
+                {% if errors %}
+                    <el-alert
+                        title="{% blocktranslate count counter=errors|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}"
+                        type="error">
+                    </el-alert>
+                {% endif %}
+            </div>
+            <template>
+                <el-button
+                  plain
+                  @click="open1">
+                  成功
+                </el-button>
+                <el-button
+                  plain
+                  @click="open2">
+                  警告
+                </el-button>
+                <el-button
+                  plain
+                  @click="open3">
+                  消息
+                </el-button>
+                <el-button
+                  plain
+                  @click="open4">
+                  错误
+                </el-button>
+              </template>
+            <form {% if has_file_field %}enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post"
+            id="{{ opts.model_name }}_form">
+                {% csrf_token %}
+                {% for fieldset in adminform %}
+                    {% for line in fieldset %}
+                        <div class="fields_line {%if line.errors %}errors{%endif%}">
+                            {% for field in line %}
+                                {{ field.field.errors }}
+                            {{field.name}}
+                        {% endfor %}
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+                <div class="submit-row">
+                    <el-row>
+                        <el-button type="primary" @click="save">保存</el-button>
+                    </el-row>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+<script>
+    new Vue({
+        el: '.page-header',
+        methods: {
+            goBack() {
+                window.location.href = '{{ back_url }}'
+            },
+            
+        }
+    })  
+    new Vue({
+        el: '.submit-row',  
+        methods: {
+            save() {
+                // 获取表单数据
+                var from_id = '{{ opts.model_name }}_form'
+                var form = document.getElementById(from_id)
+                // submit
+                console.log('form')
+                console.log(form)
+                // form.submit()
+                // let formData = new FormData($('#{{ opts.model_name }}_form'));
+                // console.log(formData)
+            }
+        }
+    })
+</script>
+
+<style>
+    .el-form-item__label {
+        width: 170px;
+        text-align: left;
+        font-size: 16px;
+        color: #666;
+    }
+    .field_required{
+        color: red;
+        line-height: 40px;
+        font-weight: bold;
+    }
+    .field-item{
+        margin-bottom: 20px;
+    }
+    .submit-row{
+        margin-top: 40px;
+        text-align: right;  
+    }
+    .submit-row .el-button{
+        width: 100px;
+    }
+</style>

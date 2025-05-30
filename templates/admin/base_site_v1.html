@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <script src="/static/django_sohoui/js/vue.js"></script>
+    <script src="/static/django_sohoui/js/index.js"></script>
+    <script src="/static/django_sohoui/js/jquery.min.js"></script>
+    <script src="/static/django_sohoui/js/axios.min.js"></script>
+    <link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+    <!-- 引入 Font Awesome -->
+    <link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+    {% block header_js_css %}
+    {% endblock %}
+    
+    <style>
+        body{
+            margin: 0;
+        }
+        html, body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .el-menu-vertical-demo:not(.el-menu--collapse) {
+            width: auto;
+            /* min-height: 400px; */
+        }
+        /* 使 #app 撑满整个页面 */
+        #app {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        .el-menu-vertical-demo:not(.el-menu--collapse) {
+            min-width: 210px;
+            min-height: 100%;
+        }
+        
+        .el-container{
+            display: flex;
+        }
+        .el-header{
+            box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+        }
+        .icon-menu{
+            display: flex;
+            align-items: center;
+            justify-content: left;
+            line-height: 56px;
+        }
+        .el-row-tabs{
+            height: 40px;
+            border-bottom: 1px solid #e6e6e6;
+            line-height: 40px;
+            padding: 0 10px;
+        }
+        .span-tabs{
+            padding: 2px 15px;
+            border: 1px solid #e6e6e6;
+            border-radius: 5px;
+            background-color: #b7cbe0;
+            color: #0F5197;
+        }
+        .active-tabs{
+            background-color: #0F5197;
+            color: #fff;
+        }
+        .el-icon-close{
+            padding: 2px;
+            color: #fff;
+        }
+        .el-icon-close:hover{
+            background-color: #e6e6e6; 
+            border-radius: 10px;
+            text-align: center;
+            color: rgb(83, 94, 197) !important;
+        }
+        .el-aside{
+            height: 100% !important;
+            width: auto !important;
+        }
+        .icon-header i{
+            width: 20px;
+            height: 20px;
+        }
+        .icon-header{
+            width: 56px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            float: left;
+        }
+        .icon-header:hover{
+            background-color: #b7cbe0;
+        }
+        .icon-header-user{
+            width: 100px;
+        }
+        .el-main{
+            padding: 20px 20px;
+            background-color: #f1f1f1;
+        }
+        .change_password_down{
+            text-decoration: none;
+            color: #000;
+        }
+        .el-container{
+            height: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+
+        <el-container>
+            {% block aside %}
+            {% include 'admin/aside.html' %}
+            {% endblock %}
+            
+            <el-container>
+                {% block header %}
+                {% include 'admin/header.html' %}
+                {% endblock %}
+                
+                {% block breadcrumb %}
+                {% include 'admin/breadcrumb.html' %}
+                {% endblock %}
+                
+                <el-main>
+                    <el-card>
+                        {% block content %}
+                        {% endblock %}
+                    </el-card>
+                </el-main>
+            </el-container>
+        </el-container>
+    </div>
+    <!-- 子组件的vue组件 -->
+    {% block vue_component %}
+    {% endblock %}
+    <!-- 子组件的vue脚本 -->
+    {% block chlidren_vue_script %}
+    {% endblock %}
+    <!-- 主组件的vue脚本 -->
+    <!-- <script src="/static/django_sohoui/typescript/js/base.js"></script> -->
+    <!-- <script src="/static/django_sohoui/typescript/js/base.js"></script> -->
+        
+    <!-- <script src="/static/django_sohoui/typescript/js/app_list.js"></script> -->
+    {% block footer_js %}
+    {% endblock %}
+    <script>
+        function openTab(url){
+            // 不另外开窗口，在当前窗口打开
+            window.location.href = url;
+        }
+
+    </script>
+</body>

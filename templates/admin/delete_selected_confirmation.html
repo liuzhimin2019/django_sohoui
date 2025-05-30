@@ -1,0 +1,54 @@
+{% load i18n l10n admin_urls static %}
+
+<script src="/static/django_sohoui/js/vue.js"></script>
+<script src="/static/django_sohoui/js/index.js"></script>
+<script src="/static/django_sohoui/js/jquery.min.js"></script>
+<script src="/static/django_sohoui/js/axios.min.js"></script>
+<link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+<!-- 引入 Font Awesome -->
+<link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+
+
+{% block container_body %}
+<div id="delete_info">
+    <el-card>
+        <el-alert
+            title="{% blocktranslate %}Are you sure you want to delete the selected {{ objects_name }}? All of the following objects and their related items will be deleted:{% endblocktranslate %}"
+            type="warning">
+        </el-alert>
+        <h3>{% translate "Summary" %}</h3>
+        <ul class="delete_summary">
+            {% for model_name, object_count in context_data.model_count %}
+            <li>{{ model_name|capfirst }}: {{ object_count }}</li>
+            {% endfor %}
+        </ul>
+
+        <h3>{% translate "Objects" %}</h3>
+        {% for deletable_object in context_data.deletable_objects %}
+            <ul>{{ deletable_object|unordered_list }}</ul>
+        {% endfor %}
+
+        <form method="post" id="delete_form">{% csrf_token %}
+        <div>
+        {% for obj in context_data.queryset %}
+        <input type="hidden" name="_selected_action" value="{{ obj.pk|unlocalize }}">
+        {% endfor %}
+        <input type="hidden" name="action" value="delete_selected">
+        <input type="hidden" name="post" value="yes">
+        <el-button type="submit" @click="submitForm">{% translate 'Yes, I’m sure' %}</el-button>
+        <!-- 刷新当前页面 -->
+        <el-button type="text" @click="refresh_page">{% translate "No, take me back" %}</el-button>
+        </div>
+        </form>
+
+    </el-card>
+</div>
+
+<style>
+    .delete_summary {
+        list-style: none;
+        font-size: 14px;
+    }
+</style>
+{% endblock %}
+

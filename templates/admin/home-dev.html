@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+{% load static %}
+{% block home_content %}
+<head>
+  <title>Dashboard</title>
+  <link rel="stylesheet" type="text/css" href="/static/django_sohoui/css/style.css">
+  <script src="/static/ui_template/js/echarts.min.js"></script> <!-- 引入 ECharts -->
+</head>
+<body class="{% if is_popup %}popup {% endif %}{% block bodyclass %}{% endblock %}"
+      data-admin-utc-offset="{% now ' Z' %}">
+
+  <!-- 首页第一个板块 -->
+  <div class="container">
+    {% for item in name %}
+        <div class="card 
+            {% if forloop.counter0 == 0 %}card-red{% elif forloop.counter0 == 1 %}card-blue{% elif forloop.counter0 == 2 %}card-green{% else %}card-default{% endif %}">
+            <div class="card-content">
+                <div class="description-container">
+                    <span class="number">{{ item.number }}</span>
+                    <span class="percent {% if '-' in item.percent %}negative{% else %}positive{% endif %}">{{ item.percent }}</span>
+                </div>
+                <span class="description">{{ item.description }}</span>
+            </div>
+            <img src="{% static item.icon %}" alt="icon">
+        </div>
+    {% endfor %}
+</div>
+
+
+
+
+  <!-- ECharts 图表容器 -->
+  <div class="echarts-container">
+    <div id="one-echarts"></div>
+    <div id="two-echarts"></div>
+  </div>
+
+  <script type="text/javascript">
+    window.onload = function() {
+        // 初始化第一个图表
+        var myChart1 = echarts.init(document.getElementById('one-echarts'));
+
+        var option1 = {
+            title: {
+                text: '月度计划信息',
+                left: 'left',
+                top: '0',
+                textStyle: {
+                    fontSize: 20,
+                    color: '#333'
+                }
+            },
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {
+                    type: 'cross',
+                    label: {
+                        backgroundColor: '#6a7985'
+                    }
+                }
+            },
+            legend: {
+                data: ['男', '女'],
+                right: '10%',
+                top: '5',
+                textStyle: {
+                    color: '#333'
+                }
+            },
+            xAxis: {
+                type: 'category',
+                boundaryGap: false,
+                data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月'],
+                axisLine: {
+                    lineStyle: {
+                        color: '#ccc'
+                    }
+                }
+            },
+            yAxis: {
+                type: 'value',
+                axisLine: {
+                    lineStyle: {
+                        color: '#ccc'
+                    }
+                }
+            },
+            series: [
+                {
+                    name: '男',
+                    type: 'line',
+                    smooth: true,
+                    data: [10, 20, 30, 40, 50, 60, 70, 60, 50, 40, 30, 20],
+                    itemStyle: {
+                        color: '#ff7f50'
+                    },
+                    areaStyle: {
+                        color: 'rgba(255, 127, 80, 0.5)'
+                    }
+                },
+                {
+                    name: '女',
+                    type: 'line',
+                    smooth: true,
+                    data: [20, 30, 40, 30, 20, 10, 20, 30, 40, 50, 60, 70],
+                    itemStyle: {
+                        color: '#6495ed'
+                    },
+                    areaStyle: {
+                        color: 'rgba(100, 149, 237, 0.5)'
+                    }
+                }
+            ]
+        };
+
+        myChart1.setOption(option1);
+
+        // 初始化第二个图表
+        var myChart2 = echarts.init(document.getElementById('two-echarts'));
+
+        var option2 = {
+            tooltip: {
+                trigger: 'item'
+            },
+            legend: {
+                top: '5%',
+                left: 'center'
+            },
+            series: [
+                {
+                    name: 'Access From',
+                    type: 'pie',
+                    radius: ['40%', '70%'],
+                    avoidLabelOverlap: false,
+                    itemStyle: {
+                        borderRadius: 10,
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    },
+                    label: {
+                        show: false,
+                        position: 'center'
+                    },
+                    emphasis: {
+                        label: {
+                            show: true,
+                            fontSize: 40,
+                            fontWeight: 'bold'
+                        }
+                    },
+                    labelLine: {
+                        show: false
+                    },
+                    data: [
+                        { value: 1048, name: 'Search Engine' },
+                        { value: 735, name: 'Direct' },
+                        { value: 580, name: 'Email' },
+                        { value: 484, name: 'Union Ads' },
+                        { value: 300, name: 'Video Ads' }
+                    ]
+                }
+            ]
+        };
+
+        myChart2.setOption(option2);
+
+        // 使图表在窗口大小改变时自动调整
+        window.onresize = function() {
+            myChart1.resize();
+            myChart2.resize();
+        };
+    };
+  </script>
+
+{% endblock %}
+</body>
+</html>

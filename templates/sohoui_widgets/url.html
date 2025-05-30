@@ -1,0 +1,38 @@
+<div id="app_{{ widget.name }}" class="field-item">
+    {% if widget.value %}
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    {% else %}
+    <input type="hidden" name="{{ widget.name }}" value="">
+    {% endif %}
+    <el-input placeholder="请输入内容" v-model="value" @change="updateValue" style="width: 400px;" :disabled="disabled">
+        <template slot="prepend">http://</template>
+    </el-input>
+</div>
+<script>
+    var value = '{{ widget.value }}'
+    var filed_value = ''
+    if (value == '' || value == 'None') {
+        filed_value = ''
+    }else{
+        filed_value = value
+    }
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data() {
+            return {
+                value: filed_value,
+                disabled: disabled
+            }
+        },
+        methods: {
+            updateValue() {
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value.replace('http://', '');
+            }
+        }
+    })
+</script>

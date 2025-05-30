@@ -1,0 +1,618 @@
+<!-- 使用bootstrap  创建一个admin 页面，包含header，footer，sidebar，content-->
+ <!-- admin.html -->
+ <!DOCTYPE html>
+ <html lang="zh-Hans">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <title>{% block title %}{% endblock %}</title>
+     <!-- 引入 Bootstrap CSS -->
+     <link href="/static/ui_template/css/bootstrap.min.css" rel="stylesheet">
+     <!-- 引入 Font Awesome -->
+     <link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+     <!-- jquery -->
+     <!-- <script src="/static/ui_template/js/jquery-3.7.1.min.js"></script> -->
+     <!-- popper.js -->
+     <!-- 引入bootstrap.bundle.min.js -->
+     <script src="/static/ui_template/js/jquery-3.5.1.slim.min.js"></script>
+     <script src="/static/ui_template/js/popper.min.js"></script>
+    <script src="/static/ui_template/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+    <!-- import Vue before Element -->
+    <script src="/static/django_sohoui/js/vue.js"></script>
+    <!-- import JavaScript -->
+    <script src="/static/django_sohoui/js/index.js"></script>
+    <style>
+        body {
+            overflow-x: hidden; /* 隐藏水平滚动条 */
+        }
+        .container-fluid{
+            padding-right: 0px !important;
+            
+        }
+        .container-fluid .row{
+            display: flex;
+        }
+        main{
+            background-color: #f1f1f1;
+            flex-grow: 1;
+            overflow: hidden;
+        }
+        .modal-content{
+            margin-top: 100px;
+            width: 900px;
+            height: 400px;
+        }
+        .soho_content{
+            height: 100%;
+            /* margin: 20px; */
+            background:#f1f1f1 !important;
+        }
+        .row{
+            flex-wrap:unset !important;
+        }
+    </style>
+ </head>
+ <body>
+    {% block content %}
+     <div class="container-fluid">
+         <div class="row">
+             <!-- Sidebar -->
+             {% block sidebar %}
+             {% include "admin/app_list.html" %}
+             {% endblock %}
+             {%  block soho_main %}
+             <!-- Main content -->
+             <main role="main"  id="mainContent">
+                 <!-- 添加header ，包含收缩按钮，右侧的个人中心-->
+                 {% block soho_header %}
+                 <div class="header">
+                     <div class="header_left">
+                         <button id="toggleSidebar" class="btn btn-primary">
+                             <i class="fas fa-bars"></i>
+                         </button>
+                     </div>
+                     <div class="header_right" style="display: flex;">
+                        <div class="header_right_item" style="display: flex; margin-right: 20px; justify-content: center; align-items: center;">
+                            <i class="fas fa-solid fa-palette" style="cursor: pointer;margin-right: 20px" id="colorPicker"></i>
+                            <i class="fas fa-solid fa-maximize" style="cursor: pointer;" id="fullscreenButton"></i>
+                        </div>
+                        <div class="dropdown" style="margin-right: 20px;">
+                            <button class="btn btn-primary dropdown-toggle" type="button" data-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user"></i> {% firstof user.get_short_name user.get_username %}
+                            </button>
+                            <ul class="dropdown-menu" style="width: 100px;">
+                                <li><a class="dropdown-item" href="/admin/password_change/">修改密码</a></li>
+                                <li><form action="{% url 'admin:logout' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <button type="submit" class="dropdown-item" style="font-size: 14px;">退出登录</button>
+                                </form></li>
+                            </ul>
+                        </div>
+                        
+                     </div>
+                     <script src="/static/ui_template/js/jquery-3.6.0.min.js"></script>
+                     <script src="/static/ui_template/js/bootstrap.bundle.min.js"></script>
+                 </div>
+                 {% endblock %}
+                 <div class="tab">
+                 </div>
+                 <div class="soho_content">
+                
+                </div>
+                
+                <script>
+                function openTab(evt, tabName, url) {
+                    // 检查是否已经存在该标签
+                    if (!$('.tab button[data-tab="' + tabName + '"]').length) {
+                        // 创建新的标签
+                        let closeButton = (tabName === '首页') ? '' : "<span class='close'>&times;</span>"; // 如果是第一个标签，不添加关闭按钮
+                        $('.tab').append("<button class='tablinks' data-tab='" + tabName + "' onclick=\"openTab(event, '" + tabName + "', '" + url + "')\">" + tabName + closeButton + "</button>");
+                    }
+                    // 显示对应的内容
+                    $('.soho_content').children().hide(); // 隐藏所有内容
+                    if ($('#' + tabName).length === 0) {
+                        // 如果内容不存在，则创建新的内容区域
+                        $('.soho_content').append('<div id="' + tabName + '" class="tabcontent" style="width: 100%; height: 100%;"><iframe src="'+url+'" style="width: 100%; height: 100%; border: none;"></iframe></div>');
+                    }
+                    $('#' + tabName).show(); // 显示当前内容
+                    console.log(tabName, url);
+                    
+                    // 保存所有标签到 localStorage
+                    let tabs = JSON.parse(localStorage.getItem('tabs')) || [];
+                    if (!tabs.some(tab => tab.name === tabName)) {
+                        tabs.push({ name: tabName, url: url });
+                        localStorage.setItem('tabs', JSON.stringify(tabs));
+                    }
+                    
+                    // 保存当前活动标签到 localStorage
+                    localStorage.setItem('activeTab', tabName);
+                    
+                    // 更新标签样式
+                    $('.tab button').removeClass('active'); // 移除所有标签的活动样式
+                    $('.tab button[data-tab="' + tabName + '"]').addClass('active'); // 为当前标签添加活动样式
+                }
+
+                // 添加关闭标签的功能
+                $(document).on('click', '.close', function() {
+                    const tabName = $(this).parent().data('tab'); // 获取要关闭的标签名
+                    $(this).parent().remove(); // 移除标签
+                    $('#' + tabName).remove(); // 移除对应的内容
+                    
+                    // 从 localStorage 中移除关闭的标签
+                    let tabs = JSON.parse(localStorage.getItem('tabs')) || [];
+                    tabs = tabs.filter(tab => tab.name !== tabName); // 过滤掉关闭的标签
+                    localStorage.setItem('tabs', JSON.stringify(tabs)); // 更新 localStorage
+                    
+                    // 更新活动标签
+                    const activeTab = localStorage.getItem('activeTab');
+                    if (activeTab === tabName) {
+                        localStorage.setItem('activeTab', tabs.length > 0 ? tabs[0].name : ''); // 更新活动标签
+                    }
+                });
+              
+                window.onload = function() {
+                    // 从 localStorage 中获取所有标签
+                    const tabs = JSON.parse(localStorage.getItem('tabs')) || [];
+                    const activeTab = localStorage.getItem('activeTab'); // 获取活动标签
+                    if (tabs.length > 0) {
+                        tabs.forEach(tab => {
+                            openTab(event, tab.name, tab.url);
+                        });
+                        // 如果存在活动标签，则显示该标签
+                        if (activeTab) {
+                            $('.tab button[data-tab="' + activeTab + '"]').click();
+                        } else {
+                            // 默认打开第一个标签
+                            $('.tab button[data-tab="' + tabs[0].name + '"]').click();
+                        }
+                    } else {
+                        openTab(event, '首页', '/django_sohoui/dashboard/');
+                    }
+                };
+                </script>
+                
+                <style>
+                .tab {
+                    overflow: hidden;
+                    background-color: #0f0e0e00;
+                }
+                .tab button {
+                    background-color: inherit;
+                    border: none;
+                    outline: none;
+                    cursor: pointer;
+                    padding: 12px 16px;
+                    transition: 0.3s;
+                    border-radius: 5px;
+                    color: #909399;
+                    background-color: #ffffff4d;
+                }
+                .tab button:hover {
+                    background-color: white;
+                }
+                .tab button.active {
+                    color: #007bff; /* 活动标签的文字颜色 */
+                    font-weight: bold; /* 活动标签的字体加粗 */
+                    background-color: white;
+                }
+                .tabcontent {
+                    padding: 20px;
+                    border: 1px solid #ccc;
+                    height: 100%;
+                }
+                .close {
+                    margin-left: 8px; /* 间距 */
+                    color: #007bff; /* 红色 */
+                    cursor: pointer; /* 鼠标指针 */
+                    font-weight: bold; /* 加粗 */
+                    font-size: 16px; /* 字体大小 */
+                    line-height: 1.5;
+                }
+                .close:hover {
+                    color: #007bff; /* 悬停时颜色 */
+                }
+                </style>
+                 <!-- {% block soho_content %}
+                 {% endblock %} -->
+                 </div>
+
+             </main>
+             {% endblock %}
+         </div>
+     </div>
+    {% endblock %}
+ 
+    <div class="modal fade" id="colorModal" tabindex="-1" role="dialog" aria-labelledby="colorModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="colorModalLabel">选择颜色</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- 这里可以添加颜色选择器 -->
+                     <style>
+                        .change-theme .theme-item {
+                            width: 80px;
+                            height: 50px;
+                            position: relative;
+                            float: left;
+                            margin: 0 15px 15px 0;
+                            background-color: #f2f2f2;
+                            cursor: pointer;
+                            font-size: 12px;
+                            color: #666;
+                            border: #FFF 1px solid;
+                            transition: all 0.3s;
+                        }
+                        .change-theme .theme-menu {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 20px;
+                            height: 100%;
+                            z-index: 11;
+                            box-shadow: 1px 0 2px 0 rgba(0, 0, 0, 0.05);
+                        }
+                        .change-theme .theme-logo {
+                            position: absolute;
+                            left: 0;
+                            top: 0;
+                            width: 100%;
+                            height: 10px;
+                            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.15);
+                        }
+                        .change-theme .theme-top {
+                            position: relative;
+                            z-index: 10;
+                            height: 10px;
+                            border-top: 1px solid #f2f2f2;
+                            border-right: 1px solid #f2f2f2;
+                        }
+                        .theme-item.selected {
+                            border: 2px solid #007bff; /* 选中时的边框颜色 */
+                        }
+                     </style>
+                    <div style="display: flex; justify-content: left; align-items: left;flex-wrap: wrap;" class="change-theme">
+                        
+                        <div title="默认" class="theme-item waves-effect selected">
+                            <div class="theme-menu" style="background: rgb(48, 65, 86);">
+                                <div class="theme-logo" style="background: rgb(48, 65, 86);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(48, 65, 86); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(48, 65, 86); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(255, 255, 255);">
+                                <span class="theme-top-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Simpleui-x" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(44, 46, 57);">
+                                <div class="theme-logo" style="background: rgb(44, 46, 57);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(44, 46, 57); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(44, 46, 57); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(255, 255, 255);">
+                                <span class="theme-top-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Element-UI" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(255, 255, 255);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(68, 126, 255);">
+                                <span class="theme-top-content" style="background-color: rgb(68, 126, 255); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="layui" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(57, 61, 73);">
+                                <div class="theme-logo" style="background: rgb(35, 38, 46);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(57, 61, 73); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(57, 61, 73); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(35, 38, 46);">
+                                <span class="theme-top-content" style="background-color: rgb(35, 38, 46); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Ant Design Pro" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(0, 11, 22);">
+                                <div class="theme-logo" style="background: rgb(0, 33, 64);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(0, 11, 22); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(0, 33, 64); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(255, 255, 255);">
+                                <span class="theme-top-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Admin LTE" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(43, 53, 57);">
+                                <div class="theme-logo" style="background: rgb(60, 141, 188);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(43, 53, 57); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(60, 141, 188); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(60, 141, 188);">
+                                <span class="theme-top-content" style="background-color: rgb(60, 141, 188); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Highdmin" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(224, 224, 224);">
+                                <div class="theme-logo" style="background: rgb(2, 192, 206);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(224, 224, 224); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(2, 192, 206); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(2, 192, 206);">
+                                <span class="theme-top-content" style="background-color: rgb(2, 192, 206); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Aircraft" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(224, 224, 224);">
+                                <div class="theme-logo" style="background: -webkit-gradient(linear, 0% 100%, 0% 0%, from(rgb(77, 91, 118)), to(rgb(111, 128, 161))) !important;"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(224, 224, 224); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: -webkit-gradient(linear, 0% 100%, 0% 0%, from(rgb(77, 91, 118)), to(rgb(111, 128, 161))) !important; color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: -webkit-gradient(linear, 0% 100%, 0% 0%, from(rgb(77, 91, 118)), to(rgb(111, 128, 161))) !important;">
+                                <span class="theme-top-content" style="background-color: -webkit-gradient(linear, 0% 100%, 0% 0%, from(rgb(77, 91, 118)), to(rgb(111, 128, 161))) !important; color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="紫色" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(62, 66, 149);">
+                                <div class="theme-logo" style="background: rgb(255, 255, 255);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(62, 66, 149); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(255, 255, 255);">
+                                <span class="theme-top-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="灰色" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(224, 224, 224);">
+                                <div class="theme-logo" style="background: rgb(33, 58, 83);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(224, 224, 224); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(33, 58, 83); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(33, 58, 83);">
+                                <span class="theme-top-content" style="background-color: rgb(33, 58, 83); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="墨绿" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(40, 56, 70);">
+                                <div class="theme-logo" style="background: rgb(40, 56, 70);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(40, 56, 70); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(40, 56, 70); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(243, 243, 244);">
+                                <span class="theme-top-content" style="background-color: rgb(243, 243, 244); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="橙色" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: linear-gradient(to right bottom, rgb(218, 131, 66), rgb(228, 81, 49));"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: linear-gradient(to right bottom, rgb(218, 131, 66), rgb(228, 81, 49)); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: linear-gradient(to right bottom, rgb(218, 131, 66), rgb(228, 81, 49));">
+                                <span class="theme-top-content" style="background-color: linear-gradient(to right bottom, rgb(218, 131, 66), rgb(228, 81, 49)); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="黑色" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(51, 51, 51);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(51, 51, 51); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(51, 51, 51);">
+                                <span class="theme-top-content" style="background-color: rgb(51, 51, 51); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="绿色" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(255, 255, 255);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(25, 169, 123);">
+                                <span class="theme-top-content" style="background-color: rgb(25, 169, 123); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="淡雅" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(235, 241, 245);">
+                                <div class="theme-logo" style="background: rgb(235, 241, 245);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(235, 241, 245); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(235, 241, 245); color: #000; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(235, 241, 245);">
+                                <span class="theme-top-content" style="background-color: rgb(235, 241, 245); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise blue" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(59, 161, 223);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(59, 161, 223); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(59, 161, 223);">
+                                <span class="theme-top-content" style="background-color: rgb(59, 161, 223); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise blue pro" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(59, 161, 223);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(59, 161, 223); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(59, 161, 223);">
+                                <span class="theme-top-content" style="background-color: rgb(59, 161, 223); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise green" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(39, 173, 96);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(39, 173, 96); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(39, 173, 96);">
+                                <span class="theme-top-content" style="background-color: rgb(39, 173, 96); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise green pro" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(39, 173, 96);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(39, 173, 96); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(39, 173, 96);">
+                                <span class="theme-top-content" style="background-color: rgb(39, 173, 96); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise red" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(201, 51, 62);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(201, 51, 62); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(201, 51, 62);">
+                                <span class="theme-top-content" style="background-color: rgb(201, 51, 62); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise red pro" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(201, 51, 62);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(201, 51, 62); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(201, 51, 62);">
+                                <span class="theme-top-content" style="background-color: rgb(201, 51, 62); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise purple" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(130, 99, 177);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(130, 99, 177); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(130, 99, 177);">
+                                <span class="theme-top-content" style="background-color: rgb(130, 99, 177); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise purple pro" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(130, 99, 177);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(130, 99, 177); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(130, 99, 177);">
+                                <span class="theme-top-content" style="background-color: rgb(130, 99, 177); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise black" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(255, 255, 255);">
+                                <div class="theme-logo" style="background: rgb(31, 44, 57);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(31, 44, 57); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(31, 44, 57);">
+                                <span class="theme-top-content" style="background-color: rgb(31, 44, 57); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="Enterprise black pro" class="theme-item active waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(31, 44, 57);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(31, 44, 57); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(31, 44, 57);">
+                                <span class="theme-top-content" style="background-color: rgb(31, 44, 57); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="x-green" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(47, 150, 136);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(47, 150, 136); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(47, 150, 136);">
+                                <span class="theme-top-content" style="background-color: rgb(47, 150, 136); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="x-red" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(38, 50, 56);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(170, 49, 48);">
+                                <span class="theme-top-content" style="background-color: rgb(170, 49, 48); color: #fff; display: none;"></span>
+                            </div>
+                        </div>
+                        <div title="x-blue" class="theme-item waves-effect">
+                            <div class="theme-menu" style="background: rgb(38, 50, 56);">
+                                <div class="theme-logo" style="background: rgb(30, 159, 255);"></div>
+                                <span class="theme-menu-content" style="background-color: rgb(38, 50, 56); color: #fff; display: none;"></span>
+                                <span class="theme-logo-content" style="background-color: rgb(30, 159, 255); color: #fff; display: none;"></span>
+                            </div>
+                            <div class="theme-top" style="background: rgb(255, 255, 255);">
+                                <span class="theme-top-content" style="background-color: rgb(255, 255, 255); color: #000; display: none;"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+     
+ </body>
+ <script>
+    // 全屏切换功能
+    document.getElementById('fullscreenButton').addEventListener('click', function() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen(); // 进入全屏
+        } else {
+            if (document.exitFullscreen) {
+                document.exitFullscreen(); // 退出全屏
+            }
+        }
+    });
+    document.getElementById('colorPicker').addEventListener('click', function() {
+        $('#colorModal').modal('show'); // 显示模态框
+    });
+    //theme-item 点击事件
+    document.querySelectorAll('.theme-item').forEach(item => {
+        item.addEventListener('click', function() {
+            // 当前选中的主题
+            const selectedTheme = this;
+            // 获取选中的主题的title
+            const selectedThemeMenu = selectedTheme.querySelector('.theme-menu');
+            const selectedThemeTop = selectedTheme.querySelector('.theme-top');
+            const selectedThemeLogo = selectedTheme.querySelector('.theme-logo');
+            const selectedTopContent = selectedTheme.querySelector('.theme-top-content');
+            const selectedMenuContent = selectedTheme.querySelector('.theme-menu-content');
+            const selectedLogoContent = selectedTheme.querySelector('.theme-logo-content');
+            // 设置颜色
+            console.log(getComputedStyle(selectedTopContent).backgroundColor);
+            document.documentElement.style.setProperty('--main-menu-color', getComputedStyle(selectedThemeMenu).backgroundColor);
+            document.documentElement.style.setProperty('--main-top-color', getComputedStyle(selectedThemeTop).backgroundColor);
+            document.documentElement.style.setProperty('--main-logo-color', getComputedStyle(selectedThemeLogo).backgroundColor);
+            document.documentElement.style.setProperty('--main-top-content-color', getComputedStyle(selectedTopContent).color);
+            document.documentElement.style.setProperty('--main-menu-content-color', getComputedStyle(selectedMenuContent).color);
+            document.documentElement.style.setProperty('--main-logo-content-color', getComputedStyle(selectedLogoContent).color);
+            $('#colorModal').modal('hide'); // 隐藏模态框
+        });
+    });
+
+    // 选择所有颜色项
+    const themeItems = document.querySelectorAll('.theme-item');
+
+    themeItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // 移除所有颜色项的选中状态
+            themeItems.forEach(i => i.classList.remove('selected'));
+            // 为当前点击的颜色项添加选中状态
+            this.classList.add('selected');
+        });
+    });
+</script>
+ </html>

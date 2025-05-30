@@ -1,0 +1,40 @@
+<template>
+  <el-table
+    ref="multipleTable"
+    :data="results"
+    border
+    stripe
+    @selection-change="handleSelectionChange"
+    style="width: 100%">
+    <el-table-column
+      type="selection"
+      width="55">
+    </el-table-column>  
+    <el-table-column
+      v-for="header in result_headers"
+      :key="header.prop" 
+      :prop="header.prop" 
+      :label="header.text"
+      sortable
+      min-width="130">
+      <template v-slot="scope">
+        <el-switch v-if="scope.row[header.prop] == 'True'" :value="true"></el-switch>
+        <el-switch v-else-if="scope.row[header.prop] == 'False'" :value="false"></el-switch>
+        <span v-else v-html="scope.row[header.prop]"></span>
+      </template>
+    </el-table-column>
+   
+    {% if is_superuser or has_change_permission  or has_delete_permission %}
+    <el-table-column label="操作"width="220" fixed="right">
+      <template v-slot="scope">
+        {% if is_superuser or has_change_permission %}
+        <el-button type="primary" icon="el-icon-edit" @click="handleEdit(scope.row)">修改</el-button>
+        {% endif %}
+        {% if is_superuser or has_delete_permission %}
+        <el-button type="danger" icon="el-icon-delete" @click="deleteRecord(scope.row)">删除</el-button>
+        {% endif %}
+      </template>
+    </el-table-column>
+    {% endif %}
+  </el-table>
+</template>

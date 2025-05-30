@@ -1,0 +1,235 @@
+<style>
+    .el-tabs--card>.el-tabs__header .el-tabs__nav{
+        border: none;
+    }
+    .el-tabs--card>.el-tabs__header .el-tabs__item{
+        border: 1px solid #dcdfe6 !important;
+        border-radius: 5px;
+        margin-right: 10px;
+        height: 34px !important;
+        line-height: 34px !important;
+        /* margin: 5px 20px 5px 0px; */
+    }
+    .el-tabs--card>.el-tabs__header .el-tabs__item.is-active.is-closable{
+        border: 1px solid #409eff !important;
+    }
+    .el-tabs--card>.el-tabs__header .el-tabs__item.is-active.is-closable .el-icon-close{
+        color: #409eff !important;
+    }
+    .el-tabs__nav div:first-child{
+        margin-left: 10px;
+    }
+    </style>
+<div id="breadcrumb">
+    <el-row class="el-row-tabs" style="height: calc(100vh - 50px); overflow: hidden;">
+        <el-col :span="24" style="height: 100%; overflow: hidden; ">
+            <el-tabs 
+                v-model="editableTabsValue" 
+                type="card" 
+                @tab-remove="removeTab" 
+                class="custom-tab" 
+                @tab-click="handleClick" 
+                oncontextmenu="handleRightClick(this,event)"
+                >
+                <el-tab-pane
+                  v-for="(item, index) in editableTabs"
+                  :key="item.name"
+                  :label="item.title"
+                  :name="item.name"
+                  :closable="index !== 0"
+                  
+                >
+                <iframe :src="item.iframeUrl" width="100%" style="min-height: 1000px; height: calc(100vh - 100px);" frameborder="0">
+                </iframe>
+
+                </el-tab-pane>
+              </el-tabs>
+              <div v-if="showContextMenu" :style="contextMenuStyle" class="context-menu">
+                <ul>
+                  <li @click="refreshTab"><i class="el-icon-refresh el-icon-close-tab"></i>刷新</li>
+                  <li @click="openNewTab"><i class="el-icon-news el-icon-close-tab"></i>新标签打开</li>
+                  <li @click="closeTab"><i class="el-icon-circle-close el-icon-close-tab"></i>关闭</li>
+              </ul>
+            </div>
+        </el-col>
+    </el-row>
+    
+</div>
+
+<script>
+    var app_index = {{ app_list.0|safe }};
+    console.log(app_index)
+    var currentTabUrl = '';
+    var currentTab = '';
+    var breadcrumb = new Vue({
+        el: '#breadcrumb',
+        data: {
+            activeName: 'first',
+            editableTabsValue: '1',
+            editableTabs: [
+                {
+                    title: app_index['name'],
+                    name: '1',
+                    iframeUrl: app_index['admin_url']
+                }
+            ],
+            tabIndex: 2,
+            showContextMenu: false,
+            contextMenuStyle: {
+            position: 'absolute',
+            top: '0',
+            left: '0'
+            }
+        },
+        mounted: function() {
+            
+            // 使用sessionStorage获取当前的tab
+            if (!sessionStorage.getItem('editableTabs')) {
+                console.log('没有找到');
+                // 将 editableTabs 转换为 JSON 字符串存储
+                sessionStorage.setItem('editableTabs', JSON.stringify(this.editableTabs));
+                sessionStorage.setItem('editableTabsValue', this.editableTabsValue);
+            } else {
+                // 从 sessionStorage 获取 editableTabs，并解析为对象
+                this.editableTabs = JSON.parse(sessionStorage.getItem('editableTabs'));
+                // 首页tab会有修改，所以需要重新赋值
+                this.editableTabs[0].title = app_index['name'];
+                this.editableTabs[0].iframeUrl = app_index['admin_url'];
+                this.editableTabs[0].active_value = '1';
+                this.editableTabsValue = sessionStorage.getItem('editableTabsValue');
+                // 使用editableTabsValue找到editableTabs对应的active_value
+                
+            }
+            console.log('editableTabs')
+            console.log(this.editableTabs)
+            console.log(this.editableTabsValue)
+            var active_value =  this.editableTabs.filter(tab => tab.name === this.editableTabsValue)[0].active_value;
+            aside_vue.default_active = active_value;
+            // 获取editableTabsValue对应的aside的default_active
+            // 添加点击事件监听器, 只要点击非context-menu区域，都隐藏
+            document.addEventListener('click', this.handleDocumentClick);
+        },
+        beforeDestroy() {
+            // 移除事件监听器
+            document.removeEventListener('click', this.handleDocumentClick);
+        },
+        methods: {
+            removeTab(targetName) {
+                let tabs = this.editableTabs;
+                let activeName = this.editableTabsValue;
+                if (activeName === targetName) {
+                tabs.forEach((tab, index) => {
+                    if (tab.name === targetName) {
+                    let nextTab = tabs[index + 1] || tabs[index - 1];
+                    if (nextTab) {
+                        activeName = nextTab.name;
+                    }
+                    }
+                });
+                }
+                this.editableTabsValue = activeName;
+                this.editableTabs = tabs.filter(tab => tab.name !== targetName);
+                sessionStorage.setItem('editableTabs', JSON.stringify(this.editableTabs));
+                sessionStorage.setItem('editableTabsValue', this.editableTabsValue);
+            },
+            handleClick(tab, event) {
+                this.showContextMenu = false;
+                sessionStorage.setItem('editableTabsValue', this.editableTabsValue);
+            },
+            handleRightClick(event) {
+                // 判断鼠标是否在el-tab区域中
+                const elTab = document.querySelector('.el-tabs__nav');
+                if (elTab && elTab.contains(event.target)) {
+                    breadcrumb.showContextMenu = true;
+                    console.log(event.clientY, event.clientX);
+                    breadcrumb.contextMenuStyle.top = `${event.clientY-60}px`; // 设置菜单位置为鼠标 Y 坐标
+                    breadcrumb.contextMenuStyle.left = `${event.clientX-180}px`; // 设置菜单位置为鼠标 X 坐标
+                }else{
+                    return false;
+                }
+
+                // 获取当前标签页的iframeUrl,获取当前鼠标右击的标签页的iframeUrl
+                currentTab = event.target.closest('.el-tabs__item').getAttribute('id');
+                // 获取当前标签页的iframeUrl
+                currentTabUrl = $('div[aria-labelledby="'+currentTab+'"]').find('iframe').attr('src');
+
+
+            },
+            handleDocumentClick() {
+                const contextMenu = this.$el.querySelector('.context-menu');
+                if (contextMenu && !contextMenu.contains(event.target)) {
+                    this.showContextMenu = false; // 隐藏菜单
+                }
+            },
+            refreshTab() {
+                window.location.reload();
+                console.log('刷新');
+            },
+            openNewTab(){
+                // 在新标签页中打开 URL
+                window.open(currentTabUrl, '_blank');
+            },
+            closeTab(){
+                // 关闭当前标签页
+                console.log(currentTab)
+                $('div[aria-labelledby="'+currentTab+'"]').remove();
+                currentTab = currentTab.replace('tab-', '');
+                this.editableTabs = this.editableTabs.filter(tab => tab.name !== currentTab);
+                this.editableTabsValue = this.editableTabs[this.editableTabs.length-1].name;
+                sessionStorage.setItem('editableTabs', JSON.stringify(this.editableTabs));
+                sessionStorage.setItem('editableTabsValue', this.editableTabsValue);
+                this.showContextMenu = false;
+            }
+        }
+    }); 
+</script>
+<script type="text/javascript">
+    function handleRightClick(tab, event) {
+        event.preventDefault();
+        // 调用vue的方法
+        breadcrumb.handleRightClick(event);
+    }
+</script>
+
+<style>
+    .context-menu {
+        position: absolute;
+        background: white;
+        padding: 10px 0;
+        margin: 5px 0;
+        background-color: #FFF;
+        border: 1px solid #EBEEF5;
+        border-radius: 4px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        width: 150px;
+        z-index: 1000;
+        color: #606266 !important;
+        font-size: 14px !important;
+    }
+    .context-menu ul{
+        padding: 0;
+        margin: 0;
+    }
+    .context-menu li{
+        padding: 0 20px;
+        height: 34px;
+        line-height: 34px;
+        cursor: pointer;
+        text-decoration: none;
+        list-style: none;
+        
+    }
+    .context-menu li:hover{
+        background-color: #e7e2e2 !important;
+    }
+    .el-icon-close-tab{
+        margin-right: 5px;
+        color: black !important;
+        width: 16px;
+        padding: 0px;
+    }
+    .el-icon-close-tab:hover{
+        color: black !important;
+        background-color: #e7e2e2 !important;
+    }
+</style>

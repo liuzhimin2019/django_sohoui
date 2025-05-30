@@ -1,0 +1,144 @@
+<div id="app_{{ widget.name }}" class="field-item" >
+    {% if widget.value %}
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    {% else %}
+    <input type="hidden" name="{{ widget.name }}" value="">
+    {% endif %}
+    <!-- <textarea name="{{ widget.name }}"  value="{{ widget.value }}" style="display: none;"></textarea> -->
+    <div style="display: flex; align-items: center;">
+        <el-upload
+            action="/django_sohoui/upload/"
+            list-type="picture-card"
+            :on-change="updateValue"
+            :file-list="fileList"
+            :disabled="disabled">
+                <i slot="default" class="el-icon-plus"></i>
+                <div slot="file" slot-scope="{file}">
+                <img
+                    class="el-upload-list__item-thumbnail"
+                    :src="file.url" alt=""
+                >
+                <span class="el-upload-list__item-actions">
+                    <span
+                    class="el-upload-list__item-preview"
+                    @click="handlePictureCardPreview(file)"
+                    >
+                    <i class="el-icon-zoom-in"></i>
+                    </span>
+                    <span
+                    v-if="!disabled"
+                    class="el-upload-list__item-delete"
+                    @click="handleDownload(file)"
+                    >
+                    <i class="el-icon-download"></i>
+                    </span>
+                    <span
+                    v-if="!disabled"
+                    class="el-upload-list__item-delete"
+                    @click="handleRemove(file)"
+                    >
+                    <i class="el-icon-delete"></i>
+                    </span>
+                </span>
+            </div>
+        </el-upload>
+    </div>
+    <el-dialog :visible.sync="dialogVisible" width="35%">
+        <img width="100%" :src="dialogImageUrl" alt="">
+      </el-dialog>
+</div>
+<style>
+    .el-upload .el-icon-plus{
+        line-height: 148px;
+    }
+    .el-upload__input{
+        display: none;
+    }
+</style>
+<script>
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+    var value= '{{ widget.value }}'
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data() {
+            return {
+                filelist_String: '',
+                dialogImageUrl: '',
+                dialogVisible: false,
+                disabled: disabled,
+                fileList: []
+            }
+        },
+        mounted() {
+            if(value != ''){
+                value_list = value.split(',');
+                console.log(value_list);
+                for(var i = 0; i < value_list.length; i++){
+                    if (value_list[i] != '' && value_list[i] != 'None'){
+                        this.fileList.push({
+                            name: value_list[i].split('/').pop(),
+                            url: value_list[i]
+                        });
+                    }
+                }
+            }
+        },
+        methods: {
+            handleRemove(file) {
+                // 删掉fileList中url为file.url的元素
+                this.fileList = this.fileList.filter(item => item.url !== file.url);
+                // 对url进行合并
+                var url = '';
+                for (var i = 0; i < this.fileList.length; i++) {
+                    url += this.fileList[i].url + ',';
+                }
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = url;
+            },
+            handlePictureCardPreview(file) {
+                this.dialogImageUrl = file.url;
+                console.log(this.dialogImageUrl);
+                this.dialogVisible = true;
+            },
+            handleDownload(file) {
+                // 点击下载图片
+                // 获取图片的url
+                var url = file.url;
+                // 创建一个a标签
+                var a = document.createElement('a');
+                // 设置a标签的href属性
+                a.href = url;
+                // 设置a标签的download属性
+                a.download = file.name;
+                // 点击下载图片
+                a.click();
+            },
+            updateValue(file, fileList) {
+                if (file.status === 'ready') return 
+
+                image_name = file.response.url.split('/').pop();
+                this.fileList.push({
+                    name: image_name,
+                    url: file.response.url
+                })
+                console.log(file, this.fileList);
+                // 对url进行合并
+                var url = '';
+                for (var i = 0; i < this.fileList.length; i++) {
+                    // 多个url 用逗号隔开
+                    if(i == this.fileList.length - 1){
+                        url += this.fileList[i].url;
+                    }else{
+                        url += this.fileList[i].url + ',';
+                    }
+                }
+                // 将file 设置为input[name="{{ widget.name }}"]的默认文件
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = url;
+            }
+        }
+    })
+</script>
+    

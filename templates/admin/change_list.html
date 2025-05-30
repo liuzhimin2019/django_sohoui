@@ -1,0 +1,547 @@
+<script src="/static/django_sohoui/js/vue.js"></script>
+<script src="/static/django_sohoui/js/index.js"></script>
+<script src="/static/django_sohoui/js/jquery.min.js"></script>
+<script src="/static/django_sohoui/js/axios.min.js"></script>
+<link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+<!-- 引入 Font Awesome -->
+<link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+
+{% load i18n static  %}
+{% load admin_list%}
+
+<style>
+    .content-main{
+        height: 100% !important;
+        min-height: 980px !important;
+        padding: 10px;
+    }
+    .el-table .cell{
+        font-size: 14px !important;
+    }
+    .content{
+        height: 1200px !important;
+    }
+    .el-tabs__content{
+        height: calc(100% - 39px) !important;
+        margin: 10px;
+    }
+    .el-pagination{
+        text-align: center;
+        margin-top: 20px;
+    }
+    .el-button{
+        padding: 9px 20px !important;
+    }
+</style>
+{% block messages %}
+    <div id="message_info"></div>
+{% endblock messages %}
+{% if messages %}
+    <script>
+        var message_info = new Vue({
+            el: '#message_info',
+            mounted() {
+
+                // 遍历所有消息并显示通知
+                console.log('{{messages}}')
+                const messages = [
+                    {% for message in messages %}
+                    
+                    {
+                        title: '消息',  // 显示消息标题
+                        dangerouslyUseHTMLString: true,
+                        message: '{{ message.message|safe }}',  // 显示消息内容
+                        type: '{{ message.tags }}',  // 消息类型
+                        duration: 3000,
+                    },
+                    {% endfor %}
+                ];
+                messages.forEach(msg => {
+                    this.$notify(msg);
+                });
+            }
+        });
+    </script>
+{% endif %}
+{% block container_body %}
+<div id="change_list">
+    <el-card>
+        <el-form id="changelist-search" method="get"  onsubmit="preSubmit(this)" >
+            {% if cl.search_fields %}
+            <el-row :gutter="20" style="margin-bottom: 20px;">
+                <el-col :xl="3" :lg="3" :md="6" :xs="12" class="custom-column">
+                    <div class="grid-content bg-purple-dark">
+                        <el-form-item >
+                            <el-input :placeholder="search_placeholder" name="q" v-model="search_value.q" clearable></el-input>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :xl="2" :lg="3" :md="6" :xs="12" v-for="filter in filter_list" :key="filter.field" class="custom-column">
+                    <div class="grid-content bg-purple-dark">
+                        <el-form-item>
+                            <el-select v-model="search_value[filter.field]" clearable filterable :placeholder="filter.field_name" @change="get_query(filter.field, search_value[filter.field])">
+                                <el-option v-for="choice in filter.choices" :key="choice.value" :label="choice.label" :value="choice.value"></el-option>
+                            </el-select>
+                            <el-input type="hidden" :name="filter.field" v-model="search_value[filter.field]"/>
+                        </el-form-item>
+                    </div>
+                </el-col>
+                <el-col :xl="4" :lg="4" :md="6" :xs="12" class="custom-column">
+                    <div class="grid-content bg-purple-dark">
+                        <el-form-item>
+                            <el-button type="primary" @click="search">搜索</el-button>
+                            <el-button type="success" @click="reset">重置</el-button>
+                        </el-form-item>
+                    </div>
+                </el-col>
+            </el-row>
+            {% endif %}
+            {% admin_actions %}
+            <template>
+                <el-table
+                  ref="multipleTable"
+                  :data="results"
+                  border
+                  stripe
+                  @selection-change="handleSelectionChange"
+                  style="width: 100%">
+                  <el-table-column
+                    type="selection"
+                    width="55">
+                  </el-table-column>  
+                  <el-table-column
+                    v-for="header in result_headers"
+                    :key="header.prop" 
+                    :prop="header.prop" 
+                    :label="header.text"
+                    sortable
+                    min-width="130">
+                    <template v-slot="scope">
+                      <el-switch v-if="scope.row[header.prop] == 'True'" :value="true"></el-switch>
+                      <el-switch v-else-if="scope.row[header.prop] == 'False'" :value="false"></el-switch>
+                      <span v-else v-html="scope.row[header.prop]"></span>
+                    </template>
+                  </el-table-column>
+                  
+                  {% if request.user.is_superuser or has_change_permission  or has_delete_permission %}
+                  <el-table-column label="操作" {% if has_change_permission and has_delete_permission %}width="220"{% else %}width="110"{% endif %} fixed="right">
+                    <template v-slot="scope">
+                      {% if request.user.is_superuser or has_change_permission %}
+                      <el-button type="primary" icon="el-icon-edit" @click="handleEdit(scope.row)">修改</el-button>
+                      {% endif %}
+                      {% if request.user.is_superuser or has_delete_permission %}
+                      <el-button type="danger" icon="el-icon-delete" @click="deleteRecord(scope.row)">删除</el-button>
+                      {% endif %}
+                    </template>
+                  </el-table-column>
+                  {% else %}
+                  <el-table-column label="操作"width="110" fixed="right">
+                    <template v-slot="scope">
+                      <el-button type="success" icon="el-icon-view" @click="handleView(scope.row)">查看</el-button>
+                    </template>
+                  </el-table-column>
+                  {% endif %}
+                </el-table>
+              </template>
+            {% block pagination %}{% pagination cl %}{% endblock %}
+        </el-form>
+    </el-card>
+</div>
+{% endblock %}
+<script type="text/javascript">
+    function preSubmit() {
+        $('#changelist-search').find("input[name!='']").each(function () {
+            if ($(this).val() == '') {
+                $(this).removeAttr('name');
+            }
+        });
+    }
+</script>
+
+
+<script>
+    console.log('{{request.user.is_superuser}}')
+    console.log('{{has_change_permission}}')
+    const result_headers = {{ result_headers|safe }};
+    const result_list = {{ result_list|safe }};
+    const filter_list = {{ filter_list|safe }};
+    
+    var search_placeholder = '{{ search_placeholder }}'
+    var add_url = '{{ add_url }}'
+    const search_value = {
+        q: '',
+        {% for filter in filter_list %}
+        {{ filter.field }}: '',
+        {% endfor %}
+    }
+    // 获取当前url中query的参数
+    const params = new URLSearchParams(window.location.search);
+    const current_page = params.get('p') || 1
+    var change_list = new Vue({
+        el: '#change_list',
+        data: {
+            input: '',
+            results: result_list,
+            result_headers: [],
+            filter_list: filter_list,
+            search_placeholder: '搜索'+search_placeholder,
+            search_value: search_value,
+            total: parseInt('{{ total }}'),
+            page_size: parseInt('{{ page_size }}'),
+            current_page: parseInt('{{ current_page }}'),
+            multipleSelection: [],
+            select_row_count: 0,
+            select_across: 0,
+            checkList: [],
+            checkList_index: [],
+        },
+        mounted() {
+            this.result_headers = result_headers;
+            this.checkList = result_headers;
+            this.checkList_index = result_headers.map(header => header.text)
+            // 获取当前url中query的参数
+            const params = new URLSearchParams(window.location.search);
+            this.search_value['q'] = params.get('q') || ''
+            filter_list.forEach(filter => {
+                if(params.get(filter.field) == 0){
+                    this.search_value[filter.field] = 0;
+                }else{
+                    this.search_value[filter.field] = parseInt(params.get(filter.field)) || '';
+                }
+            });
+            
+        },
+        methods: {
+            get_query(key, val){
+                this.search_value[key] = val;
+            },
+            search() {
+                preSubmit();
+                document.getElementById('changelist-search').submit();
+            },
+            add(){
+                window.location.href = add_url
+            },
+            handleEdit(row) {
+                window.location.href = row.change_url
+            },
+            handleView(row) {
+                window.location.href = row.change_url
+            },
+            reset(){
+                //获取当前url，去掉？后面的参数
+                const url = window.location.href.split('?')[0];
+                window.location.href = url;
+            },
+            handleSelectionChange(val) {
+                this.multipleSelection = val;
+                if(this.select_across == 1){
+                    this.select_row_count = parseInt('{{ total }}')
+                }else{
+                    this.select_row_count = this.multipleSelection.length
+                }
+            },
+            selectAll(){
+                
+                // 使用toggleAllSelection选中所有
+                this.$refs.multipleTable.toggleAllSelection()
+
+                this.results.forEach(row => {
+                    this.$refs.multipleTable.toggleRowSelection(row);
+                });
+                this.select_row_count = parseInt('{{ total }}')
+                this.select_across = 1;
+                console.log(this.select_across)
+            },
+            clearAll(){
+                this.$refs.multipleTable.clearSelection()
+                this.select_across = 0;
+                this.select_row_count = 0;
+            },
+            handleCurrentChange(val){
+                // 获取当前url，去掉？后面的参数
+                const url = window.location.href.split('?')[0];
+                window.location.href = url + '?p=' + val
+            },
+            handleAction(action_name){
+                // 获取当前url
+                const url = window.location.href
+                console.log(url, action_name, this.multipleSelection)
+                const formData = new FormData();
+                formData.append('action', action_name);
+                formData.append('select_across', this.select_across);
+                formData.append('index', 1);
+                if(this.multipleSelection.length > 0){
+                    this.multipleSelection.map(item => {
+                        formData.append('_selected_action', item.id);
+                    })
+                }else{
+                    this.$notify({
+                        title: '消息',
+                        message: '请选中至少一个选项！',
+                        type: 'warning',
+                        duration: 2000,
+                    })
+                    return false;
+                }
+                formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                axios.post(url, formData).then(res => {
+                    // 检查响应头，判断是否是文件下载
+                    const contentType = res.headers['content-type'];
+                    const contentDisposition = res.headers['content-disposition'];
+                    
+                    if (contentType && contentDisposition) {
+                        // 从Content-Disposition中获取文件名
+                        let filename = 'download';
+                        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (filenameMatch && filenameMatch[1]) {
+                            filename = filenameMatch[1].replace(/['"]/g, '');
+                        }
+                        
+                        // 创建下载链接
+                        const blob = new Blob([res.data], { type: contentType });
+                        const link = document.createElement('a');
+                        const downloadUrl = URL.createObjectURL(blob);
+                        link.setAttribute('href', downloadUrl);
+                        link.setAttribute('download', filename);
+                        link.style.visibility = 'hidden';
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        URL.revokeObjectURL(downloadUrl);  // 释放URL对象
+                        return;
+                    }
+                    // 如果不是文件下载，则处理普通响应
+                    console.log(res)
+                    if(res.status == 200){
+                        if(res.data.messages){
+                            res.data.messages.forEach(message => {
+                                this.$notify({
+                                    title: '消息',
+                                    message: message.message,
+                                    type: message.tags,
+                                    duration: 2000,
+                                })
+                            })
+                        }else{
+                            this.$confirm('你确定要删除选中的吗？', '提示', {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }).then(() => {
+                                // 当response 是一个页面的时候，显示在当前页面
+                                const html = res.data
+                                document.body.innerHTML = html
+
+                                new Vue({
+                                    el: '#delete_info',
+                                    data: {
+                                        'radio': '1'
+                                    },
+                                    methods: {
+                                        refresh_page(){
+                                            window.location.reload();
+                                        },
+                                        submitForm(){
+                                            // 提交form表单, 获取form所有的参数
+                                            // 提交form表单
+                                            const url = window.location.href
+                                            const formData = new FormData();
+                                            formData.append('action', 'delete_selected');
+                                            formData.append('post', 'yes');
+                                            formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                                            change_list.multipleSelection.map(item => {
+                                                formData.append('_selected_action', item.id);
+                                            })
+                                            axios.post(url, formData).then(res => {  
+                                                if(res.status == 200){
+                                                    
+                                                    this.$notify({
+                                                        title: '消息',
+                                                        message: '操作成功！',
+                                                        duration: 2000,
+                                                        type: 'success',
+                                                    })
+                                                    setTimeout(() => {
+                                                        window.location.reload();
+                                                    }, 2000);
+                                                }
+                                            })
+                                        }
+                                    }
+                                })
+                            }).catch(() => {
+                                this.$message({
+                                    type: 'info',
+                                    message: '已取消删除'
+                                });
+                                return false;
+                            });
+                            // window.location.href = res.data.redirect_url
+                            // 如果是TemplateResponse，跳转TemplateResponse的页面
+                            // 获取TemplateResponse的url
+                            // console.log(res)
+                            // this.$notify({
+                            //     title: '消息',
+                            //     message: '操作成功！',
+                            //     duration: 2000,
+                            // })
+                        }
+                    }else{
+                        this.$notify({
+                            title: '消息',
+                            message: '操作失败！',
+                            type: 'error',
+                            duration: 2000,
+                        })
+                    }
+                    // 延迟2秒后刷新页面，让用户能看到通知消息
+                    
+                }).catch(error => {
+                    console.error('Error:', error);
+                    this.$notify({
+                        title: '错误',
+                        message: '操作失败：' + (error.message || '未知错误'),
+                        type: 'error',
+                        duration: 2000,
+                    });
+                });
+            },
+            handleCommand(checkList){
+                console.log('1313')
+                // result_headers 按照checkList的顺序排序
+                const sortedResultHeaders = result_headers.filter(header => checkList.includes(header.text));
+                this.result_headers = sortedResultHeaders;
+            },
+            move_top(text){
+                // 找到text在result_headers中的索引
+                const index = result_headers.findIndex(header => header.text === text);
+                // 如果index为0，则不进行操作
+                if(index == 0){
+                    return;
+                }
+                // 交换result_headers[index]和result_headers[index-1]
+                const temp = result_headers[index];
+                result_headers[index] = result_headers[index-1];
+                result_headers[index-1] = temp;
+                const new_result_headers = result_headers.map(header => header.text)
+                // 按当前result_headers的顺序排序
+                const sortedResultHeaders = result_headers.filter(header => new_result_headers.includes(header.text));
+                this.result_headers = []
+                this.checkList = []
+                setTimeout(() => {  
+                    this.result_headers = sortedResultHeaders;
+                    this.checkList = this.result_headers
+                }, 0);
+            },
+            move_buttom(text){
+                // 找到text在result_headers中的索引
+                const index = result_headers.findIndex(header => header.text === text);
+                // 如果index为result_headers.length-1，则不进行操作
+                if(index == result_headers.length-1){
+                    return;
+                }
+                // 交换result_headers[index]和result_headers[index+1]
+                const temp = result_headers[index];
+                result_headers[index] = result_headers[index+1];
+                result_headers[index+1] = temp;
+                const new_result_headers = result_headers.map(header => header.text)
+                // 按当前result_headers的顺序排序
+                const sortedResultHeaders = result_headers.filter(header => new_result_headers.includes(header.text));
+                this.result_headers = []
+                this.checkList = []
+                setTimeout(() => {  
+                    this.result_headers = sortedResultHeaders;
+                    this.checkList = this.result_headers
+                }, 0);
+            },
+            deleteRecord(row){
+                // 弹出确认框
+                this.$confirm('你确定要删除选中的吗？', '提示', {
+                    confirmButtonText: '确定',
+                    cancelButtonText: '取消',
+                    type: 'warning'
+                }).then(() => {
+                    const url = window.location.href
+                    const formData = new FormData();
+                    formData.append('action', 'delete_selected');
+                    formData.append('select_across', 0);
+                    formData.append('index', 1);
+                    formData.append('_selected_action', row.id);
+                    
+                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+
+                    axios.post(url, formData).then(res => {
+                        const html = res.data
+                        document.body.innerHTML = html
+
+                        new Vue({
+                            el: '#delete_info',
+                            data: {
+                                'radio': '1'
+                            },
+                            methods: {
+                                refresh_page(){
+                                    window.location.reload();
+                                },
+                                submitForm(){
+                                    // 提交form表单, 获取form所有的参数
+                                    // 提交form表单
+                                    const url = window.location.href
+                                    const formData = new FormData();
+                                    formData.append('action', 'delete_selected');
+                                    formData.append('post', 'yes');
+                                    formData.append('csrfmiddlewaretoken', '{{ csrf_token }}');
+                                    formData.append('_selected_action', row.id);
+                                    axios.post(url, formData).then(res => {  
+                                        if(res.status == 200){
+                                            
+                                            this.$notify({
+                                                title: '消息',
+                                                message: '操作成功！',
+                                                duration: 2000,
+                                                type: 'success',
+                                            })
+                                            setTimeout(() => {
+                                                window.location.reload();
+                                            }, 2000);
+                                        }
+                                    })
+                                }
+                            }
+                        })
+                    })
+                }).catch(() => {
+                    this.$message({
+                        type: 'info',
+                        message: '已取消删除'
+                    });      
+                    return false;    
+                });
+                
+                
+               
+            }
+         
+        },
+    });
+   
+</script>
+<style>
+    .el-icon-top{
+        background-color: #409EFF;
+        padding: 2px;   
+        border-radius: 20px;
+        color: white;
+    }
+    .el-icon-bottom{
+        background-color: #409EFF;
+        padding: 2px;
+        border-radius: 20px;
+        color: white;
+    }
+    .el-checkbox__label{
+        line-height: 36px !important;
+    }
+</style>

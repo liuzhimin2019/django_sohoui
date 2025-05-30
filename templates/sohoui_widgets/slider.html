@@ -1,0 +1,25 @@
+<div id="app{{ widget.name }}">
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    <el-slider  v-model="value2" :min="0" :max="100" style="width: 30em;" @change="updateValue" ></el-slider>
+</div>
+<script>
+    new Vue({
+        el: '#app{{ widget.name }}',
+        data() {
+            return {
+                value2: parseInt('{{ widget.value }}')
+            }
+        },
+        methods: {
+            updateValue() {
+                console.log(this.value2)
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value2;
+            }
+        }
+    })
+</script>
+<style>
+    .el-slider__runway{
+        margin-top: -10px;
+    }
+</style>

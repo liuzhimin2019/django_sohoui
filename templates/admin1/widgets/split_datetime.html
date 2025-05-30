@@ -1,0 +1,31 @@
+<div id="app_{{ widget.name }}" class="field-item">
+    {{widget}}
+    <label class="el-form-item__label">{% if widget.required %}<span class="field_required">*</span>{% endif %}{{ widget.field_name }}:</label>
+    <el-date-picker
+      v-model="value"
+      type="datetime"
+      placeholder="选择日期时间">
+    </el-date-picker>
+</div>
+<script>
+    var value = '{{ widget.value }}'
+    var filed_value = ''
+    if (value == '' || value == 'None') {
+        filed_value = ''
+    }else{
+        filed_value = value
+    }
+    console.log(filed_value)
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data: {
+            type: '{{ widget.type }}',
+            name: '{{ widget.name }}',
+            value: filed_value,
+            field_name: '{{ widget.field_name }}',
+        },
+        mounted() {
+            console.log(this.value)
+        }
+    })
+</script>

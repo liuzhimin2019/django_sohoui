@@ -1,0 +1,66 @@
+{% load i18n %}
+<div class="actions">
+    <el-row style="margin-bottom: 20px;">
+        <div style="float: left;">
+            {% if request.user.is_superuser or has_add_permission %}
+            <el-button type="primary" @click="add">新增</el-button>
+            {% endif %}
+            {% block actions %}
+            {% block actions-form %}
+            {% for field in actions_result %}
+            <el-button type="{{ field.type }}" data-action="{{ field.name }}" @click="handleAction('{{ field.name }}')">
+                {% if field.icon %}
+                    <i class="{{ field.icon }}"></i>
+                {% endif %}
+                {{ field.desc }}
+            </el-button>
+            {% endfor %}
+            {% endblock %}
+            <span v-if="select_row_count > 0" style="margin-left: 20px; font-size: 14px;">
+                选中了<label v-html="select_row_count"></label>条
+                <el-button type="text" @click="selectAll" v-if="select_across == 0">选中所有{{ total }}条</el-button>
+                <el-button type="text" @click="clearAll" v-else-if="select_across == 1">取消选中</el-button>
+            </span>
+            {% endblock %}
+        </div>
+        <div style="float: right;">
+            <el-popover
+                placement="bottom"
+                width="200"
+                trigger="click"
+                >
+                
+                <el-checkbox-group v-model="checkList_index" @change="handleCommand">
+                    <el-dropdown-item v-for="(header, index) in checkList" :key="header.prop" style="height: 36px;">
+                        <el-checkbox :label="header.text" style="float: left;" ></el-checkbox>
+                        <template>
+                            <!-- 第二个元素只显示向下箭头 -->
+                            <template v-if="index === 0">
+                                <span style="float: right; display: flex; align-items: center; height: 36px;" class="move-button" @click="move_buttom(header.text)">
+                                    <i class="el-icon-bottom"></i>
+                                </span>
+                            </template>
+                            <!-- 中间元素显示上下箭头 -->
+                            <template v-else-if="index > 0 && index < checkList.length - 1">
+                                <span style="float: right; display: flex; align-items: center; height: 36px;" class="move-button" @click="move_top(header.text)">
+                                    <i class="el-icon-top"></i>
+                                </span>
+                                <span style="float: right; display: flex; align-items: center; height: 36px;" class="move-button" @click="move_buttom(header.text)">
+                                    <i class="el-icon-bottom"></i>
+                                </span>
+                            </template>
+                            <!-- 倒数第二个元素只显示向上箭头 -->
+                            <template v-else-if="index === checkList.length - 1">
+                                <span style="float: right; display: flex; align-items: center; height: 36px;" class="move-button" @click="move_top(header.text)">
+                                    <i class="el-icon-top"></i>
+                                </span>
+                            </template>
+                        </template>
+                    </el-dropdown-item>
+                </el-checkbox-group>
+                <i class="el-icon-menu el-icon-soho" slot="reference"></i>
+            </el-popover>
+
+        </div>
+    </el-row>
+</div>

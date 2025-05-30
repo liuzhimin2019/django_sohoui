@@ -1,0 +1,248 @@
+<script src="/static/django_sohoui/js/vue.js"></script>
+<script src="/static/django_sohoui/js/index.js"></script>
+<script src="/static/django_sohoui/js/jquery.min.js"></script>
+<script src="/static/django_sohoui/js/axios.min.js"></script>
+<link rel="stylesheet" href="/static/django_sohoui/css/index.css">
+<link rel="stylesheet" href="/static/admin/css/base.css">
+<!-- 引入 Font Awesome -->
+<link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+<!-- 引入 Bootstrap CSS -->
+<link href="/static/django_sohoui/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="/static/admin/css/vendor/select2/select2.css" media="screen" rel="stylesheet">
+<link href="/static/admin/css/autocomplete.css" media="screen" rel="stylesheet">
+<link href="/static/admin/css/forms.css" media="screen" rel="stylesheet">
+<script src="/static/admin/js/vendor/select2/select2.full.js"></script>
+<script src="/static/admin/js/vendor/select2/i18n/zh-CN.js"></script>
+<script src="/static/admin/js/jquery.init.js"></script>
+<script src="/static/admin/js/autocomplete.js"></script>
+<script src="/static/django_sohoui/js/inlines.js"></script>
+
+<script type="text/javascript" src="/admin/jsi18n/"></script>
+<script src="/static/admin/js/vendor/jquery/jquery.js"></script>
+<script src="/static/admin/js/calendar.js"></script>
+<script src="/static/admin/js/jquery.init.js"></script>
+<script src="/static/admin/js/admin/DateTimeShortcuts.js"></script>
+<script src="/static/admin/js/core.js"></script>
+<script src="/static/admin/js/admin/RelatedObjectLookups.js"></script>
+<script src="/static/admin/js/SelectBox.js"></script>
+<script src="/static/admin/js/actions.js"></script>
+<script src="/static/admin/js/SelectFilter2.js"></script>
+<script src="/static/admin/js/urlify.js"></script>
+<script src="/static/admin/js/prepopulate.js"></script>
+<script src="/static/admin/js/vendor/xregexp/xregexp.js"></script>
+
+<link rel="stylesheet" href="/static/admin/css/widgets.css">
+
+
+
+{% load i18n static  %}
+<link rel="stylesheet" href="{% static 'froala_editor/css/froala_editor.pkgd.min.css' %}">
+<script src="{% static 'froala_editor/js/froala_editor.pkgd.min.js' %}"></script>
+{% load admin_list %}
+{% load admin_modify %}
+<style>
+    body{
+        background-color: #f1f1f1 !important;
+    }
+    .change_form_card{
+        padding: 20px;
+        background-color: white;
+        border-radius: 3px;
+        box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
+    }
+    .page-header{
+        margin: 20px 0px 30px 75px;
+    }
+    .goback{
+        cursor: pointer;
+        text-decoration: none;
+        color: #3e9dfb !important;
+    }
+    .goback:hover{
+        text-decoration: none !important;
+    }
+    .btn-primary{
+        padding: 3px 20px;
+    }
+    .submit-row{
+        text-align: right;
+    }
+    .field_required{
+        color: red;
+        line-height: 34px;
+        font-weight: bold;
+    }
+    .el-input input{
+        height: 34px;
+    }
+    .el-input input[type="email"]{
+        width: 220px;
+        height: 34px;
+    }
+    .el-input-number__decrease, .el-input-number__increase{
+        height: 32px;
+    }
+    .el-icon-minus, .el-icon-plus{
+        line-height: 32px;
+    }
+    .fields_line{
+        margin-bottom: 10px;
+    }
+    .fields_line.errors input{
+        border: 1px solid red;
+    }
+    .fields_line.errors textarea{
+        border: 1px solid red;
+    }
+    .errorlist li{
+        list-style: none;
+        margin-left: 150px;
+        color: red;
+        font-size: 14px;
+    }
+    button, input, optgroup, select, textarea{
+        font-size: 0.8175rem !important;
+    }
+    .selector-chooseall, .selector-clearall{
+        font-size: 0.8175rem !important;
+    }
+    .fields_line{
+        /* display: flex; */
+        align-items: center;
+    }
+    /* 下拉框没有multiple标签 */
+    .fields_line select:not([multiple]){
+        height: 34px;
+        margin: 0;
+        /* margin-left: 4px; */
+    }
+    .module ul, .module ol{
+        padding-left: 3px;
+        margin-left: 0;
+    }
+    .related-widget-wrapper{
+        /* margin-left: 4px;    */
+    }
+    .select2-container--admin-autocomplete .select2-selection--single{
+        height: 34px;
+        font-size: 0.84rem;
+    }
+    .select2-selection__rendered, .select2-selection__clear{
+        height: 34px;
+        line-height: 34px;
+    }
+    .select2-container--admin-autocomplete .select2-selection--single .select2-selection__arrow{
+        height: 34px;
+        line-height: 34px;
+    }
+    .flex-container .readonly{
+        line-height: 34px;
+    }
+    .flex-container .readonly img{
+        line-height: 34px;
+    }
+
+    .fields_line input[type="text"],.fields_line select:not([multiple]), .fields_line input[type="email"]{
+        width: 220px;
+    }
+    form .aligned p.help, form .aligned div.help{
+        margin-left: 150px;
+    }
+    .module p, .module ul, .module h3, .module h4, .module dl, .module pre{
+        padding-left: 0px !important;
+        padding-right: 0px !important;
+    }
+    .flex-container .field-item{
+        display: flex;
+    }
+    .inline-related.tabular fieldset.module table{
+        width: 100%;
+        overflow-x: scroll;
+    }
+</style>
+<div id="base_form">
+    <div class="change_form_card">
+        <div class="page-header">
+            <a class="goback" onclick="window.location.href = '{{ back_url }}'"><i class="fas fa-thin fa-arrow-left"></i></i>&nbsp;&nbsp;返回</a>&nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;&nbsp;{{ title }}
+        </div>
+        {% block object-tools %}
+        {% if change and not is_popup %}
+        <ul class="object-tools">
+            {% block object-tools-items %}
+            {% change_form_object_tools %}
+            {% endblock %}
+        </ul>
+        {% endif %}
+        {% endblock %}
+        <form {% if has_file_field %} enctype="multipart/form-data" {% endif %}action="{{ form_url }}" method="post"
+        id="{{ opts.model_name }}_form">
+            {% csrf_token %}
+            {% for fieldset in adminform %}
+                <fieldset class="module aligned {{ fieldset.classes }}">
+                {% if fieldset.name %}
+                    <h2 style="margin-bottom: 20px;">{{ fieldset.name }}</h2>
+                {% endif %}
+                {% for line in fieldset %}
+                    <div class="fields_line {%if line.errors %}errors{%endif%}">
+                        {% for field in line %}
+                        {% if field.field.field_type == 'django_sohoui' %}
+                            <div  class="flex-container"  style="display: flex;">
+                                <label class="el-form-item__label">{% if field.field.field.required %}<span class="field_required">*</span>{% endif %}{{ field.field.field.field_name }}:</label>
+                                {{ field.field }}
+                                {{ field.field.errors }}
+                            </div>
+                        {% else %}
+                            <div class="flex-container" style="display: flex;">
+                                <label class="el-form-item__label">{% if field.field.field.required %}<span class="field_required">*</span>{% endif %}{{ field.field.label }}:</label>
+                                {% if field.is_readonly %}
+                                    <div class="readonly" style="display: flex;">
+                                        {{ field.contents }}
+                                    </div>
+                                {% else %}
+                                    {{ field.field }}
+                                {% endif %}
+                                {{ field.field.errors }}
+                            </div>  
+                        {% endif %}
+                        {% if field.field.help_text %}
+                            <div class="help">{{ field.field.help_text|safe }}</div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                {% endfor %}
+                </fieldset>
+            {% endfor %}
+            {% block inline_field_sets %}
+            {% for inline_admin_formset in inline_admin_formsets %}
+                {% include inline_admin_formset.opts.template %}
+            {% endfor %}
+            {% endblock %}
+
+            {% block after_related_objects %}{% endblock %}
+
+            {% if has_change_permission or has_add_permission %}
+            <div class="submit-row">
+                <button type="submit" class="btn btn-primary">保存</button>
+                <input type="submit" class="btn btn-primary" value="{% if can_change %}{% translate 'Save and continue editing' %}{% else %}{% translate 'Save and view' %}{% endif %}" name="_continue">
+            </div>
+            {% endif %}
+           
+        </form>
+    </div>
+</div>
+<script type="text/javascript">
+    // function save(){
+    //     var form = document.getElementById('{{ opts.model_name }}_form')
+    //     form.submit()
+    // }
+</script>
+<style>
+    .btn-primary{
+        padding: 6px 20px !important;
+        background-color: #409EFF !important;
+        border-color: #409EFF !important;
+    }
+</style>
+
+

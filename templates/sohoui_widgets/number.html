@@ -1,0 +1,24 @@
+
+<div id="app_{{ widget.name }}" class="field-item">
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    <el-input-number v-model="num" :min="0"  @change="updateValue" style="width: 220px;" :disabled="disabled"></el-input-number>
+</div>
+<script>
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data: {
+            num: parseInt('{{ widget.value }}') || 0,
+            disabled: disabled
+        },
+        methods: {
+            updateValue() {
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.num;
+            }
+        }
+    })
+</script>

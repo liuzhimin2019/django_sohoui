@@ -1,0 +1,29 @@
+
+.content-main{
+    height: 100%;
+    /* background-color:white; */
+}
+.content-main-left{
+    width:40%;
+    float: left;
+    height: 400px;
+}
+.content-main-right{
+    width:55%;
+    float: right;
+    height: 370px;
+}
+.card {
+    height: 175px; /* 卡片高度 */
+    border-radius: 5px;
+    width: 45%; /* 卡片宽度 */
+    display: inline-block; /* 使卡片在同一行显示 */
+    margin: 10px; /* 卡片之间的间距 */
+    background-color: #f0f0f0; /* 卡片背景颜色 */
+    text-align: center; /* 文本居中 */
+    line-height: 100px; /* 垂直居中 */
+}
+.card-container{
+    background-color: white;
+    border-radius: 5px;
+}

@@ -1,0 +1,94 @@
+<div id="aside">
+    <el-aside>
+        <el-menu
+            :default-active="default_active"
+            class="el-menu-vertical-demo"
+            background-color="#545c64"
+            text-color="#fff"
+            :collapse="isCollapse"
+            style="height: 100%;"
+            active-text-color="#ffd04b">
+            <el-menu-item index="0">
+                <img src="/static/ui_template/images/soho_logo.jpg" alt="logo" class="logo" width="30px" height="30px">
+                <span style="color: #fff;margin-left: 10px;">Admin UI</span>
+            </el-menu-item>
+            {% for app in app_list %}
+            {% if not  app.models %}
+            <el-menu-item index="1" onclick="openTab('{{ app.admin_url }}', '{{ app.name }}', '1')">
+                <template slot="title">
+                    {% if app.icon %}
+                    <i class="{{ app.icon }}"></i>
+                    {% endif %}
+                    <span>{{ app.name }}</span>
+                </template>
+            </el-menu-item>
+            {% else %}
+            <el-submenu index="{{ forloop.counter }}">
+                <template slot="title">
+                    {% if app.icon %}
+                    <i class="{{ app.icon }}"></i>
+                    {% endif %}
+                    <span>{{ app.name }}</span>
+                </template>
+                <el-menu-item-group>
+                    {% for model in app.models %}
+                    {% if model.models %}
+                    
+                    <el-submenu index="{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                        <template slot="title">
+                            <i class="{{ model.icon }}"></i>
+                            <span slot="title">{{ model.name }}</span>
+                        </template>
+                        {% for submodel in model.models %}
+                        <el-menu-item index="{{ forloop.parentloop.parentloop.counter }}-{{ forloop.parentloop.counter }}-{{ forloop.counter }}"  onclick="openTab('{{ submodel.admin_url }}', '{{ submodel.name }}', '{{ forloop.parentloop.parentloop.counter }}-{{ forloop.parentloop.counter }}-{{ forloop.counter }}')">
+                            <i class="{{ submodel.icon }}"></i>
+                            <span slot="title" >{{ submodel.name }}</span>
+                        </el-menu-item>
+                        {% endfor %}
+                    </el-submenu>
+                    {% else %}
+                    <el-menu-item index="{{ forloop.parentloop.counter }}-{{ forloop.counter }}"  onclick="openTab('{{ model.admin_url }}', '{{ model.name }}', '{{ forloop.parentloop.counter }}-{{ forloop.counter }}')">
+                        <i class="{{ model.icon }}"></i>
+                        <span slot="title" >{{ model.name }}</span>
+                    </el-menu-item>
+                    {% endif %}
+                    {% endfor %}
+                </el-menu-item-group>
+            </el-submenu>
+            {% endif %}
+            {% endfor %}
+        </el-menu>
+    </el-aside>
+</div>
+<script>
+   
+    var aside_vue =new Vue({
+        el: '#aside',
+        data: {
+            isCollapse: false,
+            default_active: '1',
+        },
+    });
+</script>
+<script>
+    function openTab(url, title, active_value){
+        // 随机生成一个name,但是同一个url需要生成同一个name
+        var name = Math.random().toString(36).substring(2, 15);
+        // 判断url是否已经存在
+        if (breadcrumb.editableTabs.some(tab => tab.iframeUrl === url)) {
+            breadcrumb.editableTabsValue = breadcrumb.editableTabs.find(tab => tab.iframeUrl === url).name;
+            sessionStorage.setItem('editableTabsValue', breadcrumb.editableTabsValue);
+            return;
+        }
+
+        breadcrumb.editableTabs.push({
+            title: title,
+            name: name,
+            iframeUrl: url,
+            active_value: active_value
+        });
+        breadcrumb.editableTabsValue = name;
+        sessionStorage.setItem('editableTabs', JSON.stringify(breadcrumb.editableTabs));
+        sessionStorage.setItem('editableTabsValue', breadcrumb.editableTabsValue);
+    }
+</script>

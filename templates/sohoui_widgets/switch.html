@@ -1,0 +1,36 @@
+<div id="app_{{ widget.id }}" class="field-item field-item-switch">
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    <el-switch
+      name="{{ widget.name }}"
+      v-model="value" @change="updateValue" :disabled="disabled">
+    </el-switch>
+</div>
+
+<script>
+    if ('{{ widget.el_disabled }}' == 'True') {
+        disabled = true
+    }else{
+        disabled = false
+    }
+    new Vue({
+        el: '#app_{{ widget.id }}',
+        data() {
+            return {
+                value: '{{ widget.value }}'=='True' ? true : false,
+                disabled: disabled
+            }
+        },
+        methods: {
+            updateValue() {
+                this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value;
+            }
+        }
+        
+    });
+</script>
+<style>
+    .field-item-switch .el-switch{
+        height: 34px;
+        line-height: 34px;
+    }
+</style>

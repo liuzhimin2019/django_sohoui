@@ -1,0 +1,173 @@
+<div id="base_header">
+    <el-header style="height: 56px;" id="base_header">
+        <el-row>
+            <el-col :span="1" style="height: 56px;line-height: 56px;">
+                <i class="fas fa-solid fa-bars icon-menu" @click="aside_Collapse"></i>
+            </el-col>
+            <el-col :span="20" style="height: 56px;line-height: 56px;">
+            </el-col>
+            <el-col :span="3" style="display: flex;justify-content: flex-end;height: 56px;line-height: 56px;">
+                <div class="icon-header">
+                    <i class="el-icon-refresh icon-menu" @click="refresh"></i>
+                </div>
+                <div class="icon-header">
+                    <i class="el-icon-full-screen icon-menu" @click="fullScreen" v-if="!isFullScreen"></i>
+                    <i class="fas fa-solid fa-compress icon-menu" @click="compressScreen" v-else></i>
+                </div>
+                <div class="icon-header icon-header-user">
+                    <el-dropdown trigger="click">
+                        <span class="el-dropdown-link">
+                            <i class="el-icon-user-solid"></i>
+                            Admin<i class="el-icon-arrow-down el-icon--right"></i>
+                        </span>
+                        <el-dropdown-menu slot="dropdown">
+                            <el-dropdown-item><a class="dropdown-item change_password_down" @click="dialogFormVisible = true">修改密码</a></el-dropdown-item>
+                            <el-dropdown-item>
+                                <form action="{% url 'admin:logout' %}" method="post" style="display: inline;">
+                                    {% csrf_token %}
+                                    <el-button  type="text" class="dropdown-item logout-btn" style="font-size: 14px;" @click="logout">退出登录</button>
+                                </form>
+                        </el-dropdown-item>
+                        </el-dropdown-menu>
+                        <el-dialog title="修改密码" :visible.sync="dialogFormVisible" width="20%" :close-on-click-modal="false">
+                            <el-form :model="form" :label-position="labelPosition" label-width="80px" :validate-on-rule-change="true" :rules="rules" method="post" ref="change_password_form" action="/admin/password_change/">
+                                {% csrf_token %}
+                                <el-form-item label="旧密码" prop="old_password"  style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <el-input v-model="form.old_password" type="password"></el-input>
+                                </el-form-item>
+                                <el-form-item label="新密码" prop="new_password1" style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <el-input v-model="form.new_password1" type="password"></el-input>
+                                </el-form-item>
+                                <el-form-item label="确认密码" prop="new_password2" style="display: flex; align-items: center; margin-bottom: 10px;">
+                                    <el-input v-model="form.new_password2" type="password"></el-input>
+                                </el-form-item>
+                            </el-form>
+                            <div slot="footer" class="dialog-footer">
+                                <el-button @click="dialogFormVisible = false">取 消</el-button>
+                                <el-button type="primary" @click="changePassword">确认修改</el-button>
+                            </div>
+                        </el-dialog>
+                    </el-dropdown>
+                </div>
+            </el-col>
+        </el-row>
+    </el-header>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var pcd = new Vue({
+            el: '#base_header',
+            data: {
+                isCollapse: false,
+                isFullScreen: false,
+                dialogFormVisible: false,
+                labelPosition: 'left',
+                form: {
+                    old_password: '',
+                    new_password1: '',
+                    new_password2: ''
+                },
+                rules: {
+                    old_password: [
+                        { required: true, message: '请输入旧密码', trigger: 'blur' },
+                        { min: 6, max: 16, message: '密码长度在 6 到 16 个字符', trigger: 'blur' }
+                    ],
+                    // 添加密码验证，是否输入密码   
+                    new_password1: [
+                        {
+                            required: true,
+                            trigger:'blur',
+                            validator:(rule, value, callback) => {
+                                if (value === '') {
+                                    callback(new Error('请输入新密码'));
+                                } else {
+                                
+                                    callback();
+                                }
+                            },
+                        
+                        }
+                    ],
+                    new_password2: [
+                        {
+                            required: true,
+                            trigger:'blur',
+                            validator:(rule, value, callback)=>{
+                                if (value === '') {
+                                    callback(new Error('请输入确认密码'));
+                                } else if (value !== pcd.form.new_password1) {
+                                    callback(new Error('两次输入密码不一致!'));
+                                }
+                            },
+                        }
+                    ],
+                
+                },
+            },
+            methods: {
+                refresh(){
+                    // 刷新当前页面
+                    window.location.reload();
+                },
+                fullScreen(){
+                    // 全屏
+                    document.documentElement.requestFullscreen();
+                    this.isFullScreen = true;
+                },
+                aside_Collapse(){
+                    // 如何往另外一个vue页面中传值
+                    aside_vue.isCollapse = !aside_vue.isCollapse;
+                },
+                compressScreen(){
+                    // 退出全屏
+                    document.exitFullscreen();
+                    this.isFullScreen = false;
+                },
+                changePassword(){
+                    this.$refs['change_password_form'].validate((valid) => {
+                        if (valid) {
+                            this.dialogFormVisible = false;
+                        }
+                    });
+                    let formData = new FormData();
+                    formData.append('old_password', this.form.old_password);
+                    formData.append('new_password1', this.form.new_password1);
+                    formData.append('new_password2', this.form.new_password2);
+                    formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());
+                    axios.post('/admin/password_change/', formData).then(res => {
+                        // 密码错误，提示错误信息
+                        if (res.data !== '') {
+                            this.$message({
+                                message: '你的旧密码不正确。请重新输入!',
+                                type: 'error'
+                            });
+                        }else{
+                            this.$message({
+                                message: '密码修改成功',
+                                type: 'success'
+                            });
+                            this.dialogFormVisible = false;
+                            // 重置表单
+                            this.$refs.change_password_form.resetFields();
+                        }
+                    });
+                },
+                logout(){
+                    let formData = new FormData();
+                    formData.append('csrfmiddlewaretoken', $('input[name="csrfmiddlewaretoken"]').val());
+                    axios.post('/admin/logout/', formData).then(res => {
+                        // 跳转到登录页
+                        window.location.href = '/admin/login/';
+                    });
+                }
+            }
+        });
+    });
+</script>
+<style>
+    .el-form-item__content{
+        margin-left:  10px !important;
+        width: 80% !important;
+    }
+</style>

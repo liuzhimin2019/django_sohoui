@@ -1,0 +1,10 @@
+<template>
+    <el-pagination
+        background
+        layout="total, prev, pager, next, jumper"
+        @current-change="handleCurrentChange"
+        :current-page="current_page"
+        :page-size="page_size"
+        :total="total">
+    </el-pagination>
+</template>

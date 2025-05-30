@@ -1,0 +1,54 @@
+<div>
+    <!-- 引入 Font Awesome -->
+    <link rel="stylesheet" href="/static/ui_template/css/all.min.css">
+    <el-aside style="width: auto;">
+        <el-menu
+            default-active="1"
+            class="el-menu-vertical-demo"
+            background-color="#545c64"
+            text-color="#fff"
+            :collapse="isCollapse"
+            style="height: 100%;"
+            active-text-color="#ffd04b">
+            <el-menu-item index="0">
+                <img src="/static/ui_template/images/soho_logo.jpg" alt="logo" class="logo" width="30px" height="30px">
+                <span style="color: #fff;margin-left: 10px;">Admin UI</span>
+            </el-menu-item>
+            {% for app in app_list %}
+            <el-submenu index="{{ forloop.counter }}">
+                <template slot="title">
+                    {% if app.icon %}
+                    <i class="{{ app.icon }}"></i>
+                    {% endif %}
+                    <span>{{ app.name }}</span>
+                </template>
+                {% if app.models %}
+                <el-menu-item-group>
+                    {% for model in app.models %}
+                    {% if model.models %}
+                    <el-submenu index="{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                        <template slot="title">
+                            <i class="{{ model.icon }}"></i>
+                            <span slot="title">{{ model.name }}</span>
+                        </template>
+                        {% for submodel in model.models %}
+                        <el-menu-item index="{{ forloop.parentloop.parentloop.counter }}-{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                            <i class="{{ submodel.icon }}"></i>
+                            <span slot="title"  onclick="openTab('{{ submodel.admin_url }}')">{{ submodel.name }}</span>
+                        </el-menu-item>
+                        {% endfor %}
+                    </el-submenu>
+                    {% else %}
+                    <el-menu-item index="{{ forloop.parentloop.counter }}-{{ forloop.counter }}">
+                        <i class="{{ model.icon }}"></i>
+                        <span slot="title"  onclick="openTab('{{ model.admin_url }}')">{{ model.name }}</span>
+                    </el-menu-item>
+                    {% endif %}
+                    {% endfor %}
+                </el-menu-item-group>
+                {% endif %}
+            </el-submenu>
+            {% endfor %}
+        </el-menu>
+    </el-aside>
+</div>

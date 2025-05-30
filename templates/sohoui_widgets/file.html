@@ -1,0 +1,37 @@
+31
+<!-- 
+
+<div id="app_{{ widget.name }}" class="field-item" >
+    <input type="hidden" name="{{ widget.name }}" value="{{ widget.value }}">
+    <div style="display: flex; align-items: center;">
+        <label class="el-form-item__label" style="margin-right: 10px;">
+            {% if widget.required %}<span class="field_required">*</span>{% endif %}{{ widget.field_name }}:
+        </label>
+        <el-upload
+            style="width: 400px;"
+            class="upload-demo"
+            action="/{{ widget.upload_to }}"
+            :file-list="fileList"
+            :on-change="updateValue">
+            <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+    </div>
+</div>
+
+<script>
+    new Vue({
+        el: '#app_{{ widget.name }}',
+        data() {
+            return {
+                fileList: []
+            }
+        },
+        methods: {
+            updateValue(file, fileList) {
+                console.log(file, fileList)
+                // this.$el.querySelector('input[name="{{ widget.name }}"]').value = this.value;
+            }
+        }
+    })
+</script>
+     -->
