@@ -78,7 +78,6 @@ LOGIN_REDIRECT_URL = '/django_sohoui/home/'
 
 ![登录页](https://admin.etcpu.com/static/img/login.png)
 
-
 ![index](https://admin.etcpu.com/static/img/index.png)
 
 ![adminlist](https://admin.etcpu.com/static/img/adminlist.png)
