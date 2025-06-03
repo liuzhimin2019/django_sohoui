@@ -152,7 +152,6 @@ class MyAdminSite(admin.AdminSite):
         if not settings.SOHO_MENU_LIST['show_system_menu']:
             app_list = settings.SOHO_MENU_LIST.get('models', [])
         else:
-            print(3131)
             for sohoui_model in settings.SOHO_MENU_LIST.get('models', []):
                 default_app_dict = {
                     'name': sohoui_model['name'],

@@ -12,7 +12,15 @@
    {% endif %}
    {{ inline_admin_formset.formset.non_form_errors }}
    <table>
-     <thead><tr>
+     <thead>
+      <tr>
+        {% for field in inline_admin_formset.fields %}
+        {% if field.name == 'byorder' %}
+        <th style="width: 20px;">
+          <div class="handle"></div>
+        </th>
+        {% endif %}
+        {% endfor %}
        <th class="original"></th>
      {% for field in inline_admin_formset.fields %}
        <th class="column-{{ field.name }}{% if field.required %} required{% endif %}{% if field.widget.is_hidden %} hidden{% endif %}">{{ field.label|capfirst }}
@@ -63,10 +71,18 @@
 
         
         </tr>
-        <tr style="display: none;"><td>
+        {% if forloop.last %}
+        <tr style="display: none;" ><td>
         <textarea style="display: none;">
           <tr class="form-row  empty-form"
             id="{{ inline_admin_formset.formset.prefix }}-empty">
+        {% for field in inline_admin_formset.fields %}
+        {% if field.name == 'byorder' %}
+        <td style="width: 20px;">
+          <div class="handle"></div>
+        </td>
+        {% endif %}
+        {% endfor %}
         <td class="original">
           {% if inline_admin_form.original or inline_admin_form.show_url %}<p>
           {% if inline_admin_form.original %}
@@ -100,13 +116,70 @@
         </tr>
         </textarea>
       </td></tr>
+      {% endif %}
      {% endfor %}
      </tbody>
    </table>
 </fieldset>
   </div>
 </div>
+<style>
+  /* 隐藏原始序号字段 */
+  .column-byorder {
+    display: none !important;
+  }
+ 
+</style>
 
 
-<script>
+<script src="/static/django_sohoui/js/jquery.min.js"></script>
+<script src="/static/django_sohoui/js/Sortable.min.js"></script>‌‌
+
+<script type="text/javascript">
+    // function save(){
+    //     var form = document.getElementById('{{ opts.model_name }}_form')
+    //     form.submit()
+    // }
+
+    {% for field in inline_admin_formset.fields %}
+    {% if field.name == 'byorder' %}
+    document.addEventListener('DOMContentLoaded', function() {
+        // 为每个 inline 表格添加拖拽把手
+        document.querySelectorAll('.inline-related tbody tr').forEach(function(row) {
+            if (!row.querySelector('.handle')) {
+                var handle = document.createElement('td');
+                handle.className = 'handle';
+                handle.innerHTML = '<i class="fas fa-arrows-alt handle" style="line-height: 33px; font-size:16px;"></i>';
+                row.insertBefore(handle, row.firstChild);
+            }
+        });
+
+        // 初始化所有 inline 表格的拖拽功能
+        document.querySelectorAll('.inline-related tbody').forEach(function(tbody) {
+            new Sortable(tbody, {
+                animation: 150,
+                handle: '.handle',
+                // ghostClass: 'sortable-ghost',
+                onEnd: function(evt) {
+                    // 更新序号
+                    updateOrderNumbers();
+                }
+            });
+        });
+
+        // 更新序号函数
+        function updateOrderNumbers() {
+            document.querySelectorAll('.inline-related tbody tr').forEach(function(row, index) {
+                // 更新 ORDER 字段
+                var orderInput = row.querySelector('input[name$="-byorder"]');
+                console.log(index)
+                if (orderInput) {
+                    orderInput.value = index;
+                }
+            });
+        }
+    });
+    {% endif %}
+    {% endfor %}
+
 </script>

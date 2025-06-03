@@ -41,24 +41,23 @@
         var message_info = new Vue({
             el: '#message_info',
             mounted() {
-
-                // 遍历所有消息并显示通知
-                console.log('{{messages}}')
+                // 获取所有消息
                 const messages = [
                     {% for message in messages %}
-                    
                     {
-                        title: '消息',  // 显示消息标题
+                        title: '消息',
                         dangerouslyUseHTMLString: true,
-                        message: '{{ message.message|safe }}',  // 显示消息内容
-                        type: '{{ message.tags }}',  // 消息类型
+                        message: '{{ message.message|safe }}',
+                        type: '{{ message.tags }}',
                         duration: 3000,
                     },
                     {% endfor %}
                 ];
-                messages.forEach(msg => {
-                    this.$notify(msg);
-                });
+                
+                // 只显示最后一个消息
+                if (messages.length > 0) {
+                    this.$notify(messages[messages.length - 1]);
+                }
             }
         });
     </script>
@@ -316,6 +315,7 @@
                     console.log(res)
                     if(res.status == 200){
                         if(res.data.messages){
+                            console.log(message.message)
                             res.data.messages.forEach(message => {
                                 this.$notify({
                                     title: '消息',

@@ -160,6 +160,44 @@
         width: 100%;
         overflow-x: scroll;
     }
+    .btn-primary{
+        padding: 6px 20px !important;
+        background-color: #409EFF !important;
+        border-color: #409EFF !important;
+    }
+    form .aligned ul{
+        margin-left: 0px !important;
+    }
+    .inline-deletelink{
+        margin-top: 8px !important;
+    }
+    /* 添加拖拽把手样式 */
+    .handle {
+        cursor: move;
+        color: #999;
+        padding: 0 5px;
+    }
+    .handle:hover {
+        color: #666;
+    }
+    /* 拖拽时的样式 */
+    .sortable-ghost {
+        opacity: 0.4;
+        background: #F0F0F0;
+    }
+    /* 确保表格行可以拖拽 */
+    .inline-related tbody tr {
+        cursor: move;
+    }
+    .field-byorder{
+        display: none;
+    }
+    .original{
+        display: none;
+    }
+    .inline-group .tabular tr.has_original td{
+        padding-top: 8px !important;
+    }
 </style>
 <div id="base_form">
     <div class="change_form_card">
@@ -231,18 +269,88 @@
         </form>
     </div>
 </div>
+{% block messages %}
+    <div id="message_info"></div>
+{% endblock messages %}
+{% if messages %}
+<script>
+    var message_info = new Vue({
+        el: '#message_info',
+        mounted() {
+            // 获取所有消息
+            const messages = [
+                {% for message in messages %}
+                {
+                    title: '消息',
+                    dangerouslyUseHTMLString: true,
+                    message: '{{ message.message|safe }}',
+                    type: '{{ message.tags }}',
+                    duration: 3000,
+                },
+                {% endfor %}
+            ];
+            
+            // 只显示最后一个消息
+            if (messages.length > 0) {
+                this.$notify(messages[messages.length - 1]);
+            }
+        }
+    });
+</script>
+{% endif %}
+<script src="/static/django_sohoui/js/jquery.min.js"></script>
+<script src="/static/django_sohoui/js/Sortable.min.js"></script>‌‌
+
 <script type="text/javascript">
     // function save(){
     //     var form = document.getElementById('{{ opts.model_name }}_form')
     //     form.submit()
     // }
+
+    // document.addEventListener('DOMContentLoaded', function() {
+    //     // 为每个 inline 表格添加拖拽把手
+    //     document.querySelectorAll('.inline-related tbody tr').forEach(function(row) {
+    //         if (!row.querySelector('.handle')) {
+    //             var handle = document.createElement('td');
+    //             handle.className = 'handle';
+    //             handle.innerHTML = '<i class="fas fa-arrows-alt handle" style="line-height: 33px; font-size:16px;"></i>';
+    //             row.insertBefore(handle, row.firstChild);
+    //         }
+    //     });
+
+    //     // 初始化所有 inline 表格的拖拽功能
+    //     document.querySelectorAll('.inline-related tbody').forEach(function(tbody) {
+    //         new Sortable(tbody, {
+    //             animation: 150,
+    //             handle: '.handle',
+    //             // ghostClass: 'sortable-ghost',
+    //             onEnd: function(evt) {
+    //                 // 更新序号
+    //                 updateOrderNumbers();
+    //             }
+    //         });
+    //     });
+
+    //     // 更新序号函数
+    //     function updateOrderNumbers() {
+    //         console.log(131)
+    //         document.querySelectorAll('.inline-related tbody tr').forEach(function(row, index) {
+    //             // 更新 ORDER 字段
+    //             var orderInput = row.querySelector('input[name$="-byorder"]');
+    //             console.log(index)
+    //             if (orderInput) {
+    //                 orderInput.value = index;
+    //             }
+                
+    //             // 更新 byorder 字段
+    //             // var byorderInput = row.querySelector('input[name$="-byorder"]');
+    //             // if (byorderInput) {
+    //             //     byorderInput.value = index;
+    //             // }
+    //         });
+    //     }
+    // });
+
 </script>
-<style>
-    .btn-primary{
-        padding: 6px 20px !important;
-        background-color: #409EFF !important;
-        border-color: #409EFF !important;
-    }
-</style>
 
 

@@ -63,6 +63,7 @@ class ExampleItem(models.Model):
     item = UiForeignKeyField(ExampleModel, on_delete=models.CASCADE, null=True, blank=True, verbose_name='示例模型')
     title = UiCharField(max_length=200, default='', verbose_name='标题')
     price = UiFloatField(default=0.0, verbose_name='价格')
+    byorder = UiIntegerField(default=0, verbose_name='排序')
     
     def __str__(self):
         return self.title

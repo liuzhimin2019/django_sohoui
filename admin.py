@@ -18,13 +18,14 @@ class AdminMenusAdmin(BaseAdmin):
     ordering = ('sort',)
     autocomplete_fields = ['parent']
 
-# adminsite.register(AdminMenus, AdminMenusAdmin)
+adminsite.register(AdminMenus, AdminMenusAdmin)
 
 
 
 class ExampleItemInline(admin.TabularInline):
     model = ExampleItem
-    extra = 1
+    extra = 0
+    ordering = ('byorder',)
     
 
 
@@ -79,7 +80,7 @@ class ExampleModelAdmin(BaseAdmin):
     actions = ['updatge_is_active', 'export_excel']
     inlines = [ExampleItemInline, ]
 
-# adminsite.register(ExampleModel, ExampleModelAdmin)
+adminsite.register(ExampleModel, ExampleModelAdmin)
 
 
 class DemoModelItemInline(admin.TabularInline):
@@ -107,4 +108,4 @@ class DemoModelAdmin(BaseAdmin):
     autocomplete_fields = ['adminmenus']
     inlines = [DemoModelItemInline, DemoModelItemInline2]
 
-# adminsite.register(DemoModel, DemoModelAdmin)
+adminsite.register(DemoModel, DemoModelAdmin)
